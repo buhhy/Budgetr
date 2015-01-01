@@ -1,0 +1,114 @@
+html {
+  background-color: #EEFFF5;
+  height: 100%;
+}
+html body {
+  font-family: "Andes Rounded";
+  font-size: 14px;
+  margin: 0.7em 0.5em;
+  color: #289E7F;
+}
+html body section.expense-log-screen:first-child {
+  margin-top: 3em;
+}
+html body section.expense-log-screen div.header {
+  position: fixed;
+  top: 0;
+  display: block;
+  background-color: #EEFFF5;
+  width: 100%;
+}
+html body section.expense-log-screen div.header h1 {
+  margin: 0.7em 0;
+  color: #98D8C5;
+  font-size: 1.3em;
+  font-weight: 400;
+}
+html body section.expense-log-screen h2 {
+  color: #289E7F;
+  font-family: "Lato";
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  font-size: 0.9em;
+  border-bottom: 2.5px solid #289E7F;
+  padding: 0.5em;
+  margin-bottom: 0.7em;
+}
+html body section.expense-log-screen ul.expense-list {
+  width: 100%;
+  table-layout: fixed;
+  display: table;
+}
+html body section.expense-log-screen ul.expense-list li.expense {
+  display: table-row;
+  list-style: none;
+}
+html body section.expense-log-screen ul.expense-list li.expense div {
+  display: table-cell;
+  padding-bottom: 0.6em;
+}
+html body section.expense-log-screen ul.expense-list li.expense div.bus-name {
+  width: 25%;
+}
+html body section.expense-log-screen ul.expense-list li.expense div.bus-name span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+  margin: 0 0.5em;
+}
+html body section.expense-log-screen ul.expense-list li.expense div.items {
+  width: 55%;
+}
+html body section.expense-log-screen ul.expense-list li.expense div.items span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+  margin: 0 0.5em;
+}
+html body section.expense-log-screen ul.expense-list li.expense div.cost {
+  width: 20%;
+  text-align: right;
+}
+html body section.expense-log-screen .day-log {
+  margin: 0.7em 0;
+  width: 98%;
+}
+html body section.expense-log-screen .truncate span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+  margin: 0 0.5em;
+}
+html body section.expense-log-screen div.action {
+  display: block;
+  position: fixed;
+  bottom: 0;
+  height: 50%;
+  width: 100%;
+  background: -moz-linear-gradient(top, rgba(238, 255, 245, 0) 0%, rgba(238, 255, 245, 0.02) 1%, #eefff5 65%, #eefff5 98%);
+  /* FF3.6+ */
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, rgba(238, 255, 245, 0)), color-stop(1%, rgba(238, 255, 245, 0.02)), color-stop(65%, #eefff5), color-stop(98%, #eefff5));
+  /* Chrome,Safari4+ */
+  background: -webkit-linear-gradient(top, rgba(238, 255, 245, 0) 0%, rgba(238, 255, 245, 0.02) 1%, #eefff5 65%, #eefff5 98%);
+  /* Chrome10+,Safari5.1+ */
+  background: -o-linear-gradient(top, rgba(238, 255, 245, 0) 0%, rgba(238, 255, 245, 0.02) 1%, #eefff5 65%, #eefff5 98%);
+  /* Opera 11.10+ */
+  background: -ms-linear-gradient(top, rgba(238, 255, 245, 0) 0%, rgba(238, 255, 245, 0.02) 1%, #eefff5 65%, #eefff5 98%);
+  /* IE10+ */
+  background: linear-gradient(to bottom, rgba(238, 255, 245, 0) 0%, rgba(238, 255, 245, 0.02) 1%, #eefff5 65%, #eefff5 98%);
+  /* W3C */
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#00eefff5', endColorstr='#eefff5', GradientType=0);
+  /* IE6-9 */
+}
+html body section.expense-log-screen div.action div.button {
+  border-radius: 50%;
+  width: 10em;
+  height: 10em;
+  background-color: #52C7E2;
+  position: relative;
+  bottom: -12em;
+  margin: 0 auto;
+}
