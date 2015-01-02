@@ -8,21 +8,133 @@ html body {
   margin: 0.7em 0.5em;
   color: #289E7F;
 }
-html body section.expense-log-screen:first-child {
-  margin-top: 3em;
-}
-html body section.expense-log-screen div.header {
+html body div.header {
   position: fixed;
   top: 0;
-  display: block;
   background-color: #EEFFF5;
   width: 100%;
-}
-html body section.expense-log-screen div.header h1 {
   margin: 0.7em 0;
+}
+html body div.header h1 {
   color: #98D8C5;
   font-size: 1.3em;
   font-weight: 400;
+  display: table-cell;
+  width: 0px;
+  white-space: nowrap;
+  padding-right: 0.5em;
+}
+html body div.header div.progress {
+  display: table-cell;
+  width: 50%;
+}
+html body div.header div.progress div {
+  border-radius: 50%;
+  width: 0.6em;
+  height: 0.6em;
+  background-color: #B9EDDB;
+  display: inline-block;
+  margin-left: 0.15em;
+}
+html body div.header div.progress div.prog1 {
+  background-color: #80BCA8;
+}
+html body div.header div.close-button {
+  display: table-cell;
+  width: 100%;
+  text-align: right;
+}
+html body div.header div.close-button span {
+  padding-right: 0.5em;
+  color: #C9C9C9;
+}
+@media (max-width: 700px) {
+  html body div.header div.close-button span {
+    display: none;
+  }
+}
+html body div.action {
+  display: block;
+  position: fixed;
+  bottom: 0;
+  height: 50%;
+  width: 100%;
+  background: -moz-linear-gradient(top, rgba(238, 255, 245, 0) 0%, rgba(238, 255, 245, 0.02) 1%, #eefff5 65%, #eefff5 98%);
+  /* FF3.6+ */
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, rgba(238, 255, 245, 0)), color-stop(1%, rgba(238, 255, 245, 0.02)), color-stop(65%, #eefff5), color-stop(98%, #eefff5));
+  /* Chrome,Safari4+ */
+  background: -webkit-linear-gradient(top, rgba(238, 255, 245, 0) 0%, rgba(238, 255, 245, 0.02) 1%, #eefff5 65%, #eefff5 98%);
+  /* Chrome10+,Safari5.1+ */
+  background: -o-linear-gradient(top, rgba(238, 255, 245, 0) 0%, rgba(238, 255, 245, 0.02) 1%, #eefff5 65%, #eefff5 98%);
+  /* Opera 11.10+ */
+  background: -ms-linear-gradient(top, rgba(238, 255, 245, 0) 0%, rgba(238, 255, 245, 0.02) 1%, #eefff5 65%, #eefff5 98%);
+  /* IE10+ */
+  background: linear-gradient(to bottom, rgba(238, 255, 245, 0) 0%, rgba(238, 255, 245, 0.02) 1%, #eefff5 65%, #eefff5 98%);
+  /* W3C */
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#00eefff5', endColorstr='#eefff5', GradientType=0);
+  /* IE6-9 */
+}
+html body div.action div.button {
+  border-radius: 50%;
+  width: 10em;
+  height: 10em;
+  background-color: #52C7E2;
+  position: relative;
+  margin: 0 auto;
+  box-shadow: 0 0.2em 0.4em #AABCB1;
+}
+html body div.action div.button:hover {
+  cursor: pointer;
+  background-color: #4ED4EA;
+}
+html body div.action div.button:active {
+  background-color: #51E0EF;
+  box-shadow: 0 0.2em 0.3em #AABCB1;
+  bottom: -60.5%;
+}
+@media (min-height: 200px) and (max-height: 300px) {
+  html body div.action div.button {
+    bottom: -50%;
+  }
+}
+@media (min-height: 300px) and (max-height: 400px) {
+  html body div.action div.button {
+    bottom: -60%;
+  }
+}
+@media (min-height: 400px) and (max-height: 550px) {
+  html body div.action div.button {
+    bottom: -70%;
+  }
+}
+@media (min-height: 550px) and (max-height: 1000px) {
+  html body div.action div.button {
+    bottom: -60%;
+  }
+}
+html body div.action div.button div {
+  color: #FFF;
+  font-family: Lato;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-align: center;
+  position: relative;
+  top: 1.1em;
+}
+html body div.action div.button div:first-child {
+  font-size: 1.2em;
+  font-weight: 600;
+}
+html body div.action div.button div:last-child {
+  margin-top: 0.5em;
+}
+@media (min-height: 550px) {
+  html body div.action div.button div {
+    top: 30%;
+  }
+}
+html body section.expense-log-screen div.header {
+  display: table;
 }
 html body section.expense-log-screen h2 {
   color: #289E7F;
@@ -82,33 +194,77 @@ html body section.expense-log-screen .truncate span {
   display: block;
   margin: 0 0.5em;
 }
-html body section.expense-log-screen div.action {
-  display: block;
-  position: fixed;
-  bottom: 0;
-  height: 50%;
-  width: 100%;
-  background: -moz-linear-gradient(top, rgba(238, 255, 245, 0) 0%, rgba(238, 255, 245, 0.02) 1%, #eefff5 65%, #eefff5 98%);
-  /* FF3.6+ */
-  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, rgba(238, 255, 245, 0)), color-stop(1%, rgba(238, 255, 245, 0.02)), color-stop(65%, #eefff5), color-stop(98%, #eefff5));
-  /* Chrome,Safari4+ */
-  background: -webkit-linear-gradient(top, rgba(238, 255, 245, 0) 0%, rgba(238, 255, 245, 0.02) 1%, #eefff5 65%, #eefff5 98%);
-  /* Chrome10+,Safari5.1+ */
-  background: -o-linear-gradient(top, rgba(238, 255, 245, 0) 0%, rgba(238, 255, 245, 0.02) 1%, #eefff5 65%, #eefff5 98%);
-  /* Opera 11.10+ */
-  background: -ms-linear-gradient(top, rgba(238, 255, 245, 0) 0%, rgba(238, 255, 245, 0.02) 1%, #eefff5 65%, #eefff5 98%);
-  /* IE10+ */
-  background: linear-gradient(to bottom, rgba(238, 255, 245, 0) 0%, rgba(238, 255, 245, 0.02) 1%, #eefff5 65%, #eefff5 98%);
-  /* W3C */
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#00eefff5', endColorstr='#eefff5', GradientType=0);
-  /* IE6-9 */
+html body section.new-expense div {
+  left: 0;
+  display: none;
 }
-html body section.expense-log-screen div.action div.button {
-  border-radius: 50%;
-  width: 10em;
-  height: 10em;
-  background-color: #52C7E2;
-  position: relative;
-  bottom: -12em;
-  margin: 0 auto;
+html body section.new-expense div.topbar {
+  margin: 0.5em;
+}
+html body section.new-expense div.notification-box {
+  max-width: 25em;
+  background-color: #E4F9EF;
+  padding: 0.4em;
+  margin: 1em 0 0 0.5em;
+  width: 93%;
+  display: none;
+}
+html body section.new-expense div.notification-box:hover {
+  cursor: pointer;
+  background-color: #D9F4E7;
+}
+html body section.new-expense div.notification-box:hover .dismiss {
+  font-weight: 600;
+}
+html body section.new-expense div.notification-box h3 {
+  display: table-cell;
+}
+html body section.new-expense div.notification-box h3.notification {
+  width: 0;
+  white-space: nowrap;
+}
+html body section.new-expense div.notification-box h3.dismiss {
+  color: #8E8E8E;
+  text-align: right;
+  width: 100%;
+}
+html body section.new-expense div h2.new-expense-question {
+  font-size: 3em;
+  font-weight: 400;
+  color: #2FB28C;
+  margin: 2em 0 0.5em;
+  line-height: 1.2em;
+}
+html body section.new-expense div h3 {
+  font-size: 0.7em;
+  letter-spacing: 0.09em;
+  font-family: Lato;
+  font-weight: 500;
+}
+html body section.new-expense div h3.instruction {
+  margin-top: 0.5em;
+  padding-left: 0.7em;
+}
+html body section.new-expense div input {
+  border-style: none;
+  border-bottom: 4px solid #289E7F;
+  width: 99%;
+  max-width: 25em;
+  background: none;
+  font-family: "Andes Rounded";
+  font-size: 2em;
+  color: #289E7F;
+  padding-left: 0.2em;
+}
+html body section.new-expense div input::-webkit-input-placeholder {
+  color: #98D8C5;
+}
+html body section.new-expense div input::-moz-placeholder {
+  color: #98D8C5;
+}
+html body section.new-expense div input:focus {
+  outline: 0;
+}
+.hidden {
+  display: none;
 }
