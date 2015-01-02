@@ -13,7 +13,7 @@ html {
 			top: 0;
 			background-color: #EEFFF5;
 			width: 100%;
-			margin: 0.7em 0;
+			padding: 0.7em 0;
 
 			h1 {
 				color: #98D8C5;
@@ -47,6 +47,18 @@ html {
 				width: 100%;
 				text-align: right;
 
+				&:hover {
+					cursor: pointer;
+
+					span {
+						color: #8E8E8E;
+					}
+
+					svg {
+						fill: #8E8E8E;
+					}
+				}
+
 				span {
 					padding-right: 0.5em;
 					color: #C9C9C9;
@@ -55,10 +67,15 @@ html {
 						.hidden;
 					}
 				}
+
+				svg {
+					fill: #C9C9C9;
+				}
 			}
 		}
 
 		div.action {
+			left: 0;
 			display: block;
 			position: fixed;
 			bottom: 0;
@@ -153,7 +170,7 @@ html {
 					font-size: 0.9em;
 					border-bottom: 2.5px solid #289E7F;
 					padding: 0.5em;
-					margin-bottom: 0.7em;
+					margin: 3em 0 0.7em;
 				}
 
 				ul.expense-list {
@@ -203,47 +220,47 @@ html {
 				}
 			}
 
-			&.new-expense div {
-				left: 0;
+			&.new-expense {
 
-				//Toggle this for new expense
-				.hidden;
+				div {
+					left: 0;
 
-				&.topbar {
-					margin: 0.5em;
-				}
-
-				&.notification-box {
-					max-width: 25em;
-					background-color: #E4F9EF;
-					padding: 0.4em;
-					margin: 1em 0 0 0.5em;
-					width: 93%;
-
-					&:hover {
-						cursor:pointer;
-						background-color: #D9F4E7;
-
-						.dismiss {
-							font-weight: 600;
-						}
+					&.topbar {
+						margin: 0.5em;
 					}
 
-					//Toggle this notification box
-					.hidden;
+					&.notification-box {
+						max-width: 25em;
+						background-color: #E4F9EF;
+						padding: 0.4em;
+						margin: 1em 0 0 0.5em;
+						width: 93%;
 
-					h3 {
-						display: table-cell;
+						&:hover {
+							cursor:pointer;
+							background-color: #D9F4E7;
 
-						&.notification {
-							width: 0;
-							white-space: nowrap;
+							.dismiss {
+								font-weight: 600;
+							}
 						}
 
-						&.dismiss {
-							color: #8E8E8E;
-							text-align: right;
-							width: 100%;
+						//Toggle this notification box
+						.hidden;
+
+						h3 {
+							display: table-cell;
+
+							&.notification {
+								width: 0;
+								white-space: nowrap;
+							}
+
+							&.dismiss {
+								color: #8E8E8E;
+								text-align: right;
+								width: 100%;
+							}
 						}
 					}
 				}
@@ -265,6 +282,18 @@ html {
 					&.instruction {
 						margin-top: 0.5em;
 						padding-left: 0.7em;
+					}
+				}
+
+				ul {
+					margin: 0.5em 0 0 0.2em;
+					list-style: none;
+					font-size: 2em;
+					color: #88BFAD;
+					line-height: 1.3em;
+
+					li {
+						display: cell;
 					}
 				}
 

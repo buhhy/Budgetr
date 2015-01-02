@@ -13,7 +13,7 @@ html body div.header {
   top: 0;
   background-color: #EEFFF5;
   width: 100%;
-  margin: 0.7em 0;
+  padding: 0.7em 0;
 }
 html body div.header h1 {
   color: #98D8C5;
@@ -44,6 +44,15 @@ html body div.header div.close-button {
   width: 100%;
   text-align: right;
 }
+html body div.header div.close-button:hover {
+  cursor: pointer;
+}
+html body div.header div.close-button:hover span {
+  color: #8E8E8E;
+}
+html body div.header div.close-button:hover svg {
+  fill: #8E8E8E;
+}
 html body div.header div.close-button span {
   padding-right: 0.5em;
   color: #C9C9C9;
@@ -53,7 +62,11 @@ html body div.header div.close-button span {
     display: none;
   }
 }
+html body div.header div.close-button svg {
+  fill: #C9C9C9;
+}
 html body div.action {
+  left: 0;
   display: block;
   position: fixed;
   bottom: 0;
@@ -144,7 +157,7 @@ html body section.expense-log-screen h2 {
   font-size: 0.9em;
   border-bottom: 2.5px solid #289E7F;
   padding: 0.5em;
-  margin-bottom: 0.7em;
+  margin: 3em 0 0.7em;
 }
 html body section.expense-log-screen ul.expense-list {
   width: 100%;
@@ -196,7 +209,6 @@ html body section.expense-log-screen .truncate span {
 }
 html body section.new-expense div {
   left: 0;
-  display: none;
 }
 html body section.new-expense div.topbar {
   margin: 0.5em;
@@ -228,24 +240,34 @@ html body section.new-expense div.notification-box h3.dismiss {
   text-align: right;
   width: 100%;
 }
-html body section.new-expense div h2.new-expense-question {
+html body section.new-expense h2.new-expense-question {
   font-size: 3em;
   font-weight: 400;
   color: #2FB28C;
   margin: 2em 0 0.5em;
   line-height: 1.2em;
 }
-html body section.new-expense div h3 {
+html body section.new-expense h3 {
   font-size: 0.7em;
   letter-spacing: 0.09em;
   font-family: Lato;
   font-weight: 500;
 }
-html body section.new-expense div h3.instruction {
+html body section.new-expense h3.instruction {
   margin-top: 0.5em;
   padding-left: 0.7em;
 }
-html body section.new-expense div input {
+html body section.new-expense ul {
+  margin: 0.5em 0 0 0.2em;
+  list-style: none;
+  font-size: 2em;
+  color: #88BFAD;
+  line-height: 1.3em;
+}
+html body section.new-expense ul li {
+  display: cell;
+}
+html body section.new-expense input {
   border-style: none;
   border-bottom: 4px solid #289E7F;
   width: 99%;
@@ -256,13 +278,13 @@ html body section.new-expense div input {
   color: #289E7F;
   padding-left: 0.2em;
 }
-html body section.new-expense div input::-webkit-input-placeholder {
+html body section.new-expense input::-webkit-input-placeholder {
   color: #98D8C5;
 }
-html body section.new-expense div input::-moz-placeholder {
+html body section.new-expense input::-moz-placeholder {
   color: #98D8C5;
 }
-html body section.new-expense div input:focus {
+html body section.new-expense input:focus {
   outline: 0;
 }
 .hidden {

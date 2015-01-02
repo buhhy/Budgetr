@@ -6,7 +6,7 @@
 		<title>Expense Tracker</title>
 	</head>
 	<body>
-		<section class="expense-log-screen">
+		<section class="expense-log-screen" id="expenseLog">
 			<div class="header">
 				<h1>Expense Log</h1>
 			</div>
@@ -182,14 +182,14 @@
 			</div>
 
 			<div class="action">
-				<div class="button">
+				<div class="button" id="newExpBtn">
 					<div>NEW</div>
 					<div>EXPENSE</div>
 				</div>
 			</div>
 		</section>
 
-		<section class="new-expense">
+		<section class="new-expense hidden" id="newExpenseForm">
 			<div class="header">
 				<div class="topbar">
 					<h1>New Expense</h1>
@@ -199,10 +199,10 @@
 						<div class="prog3"></div>
 						<div class="prog4"></div>
 					</div>
-					<div class="close-button">
+					<div class="close-button" id="cancelBtn">
 						<span>Close</span>
 						<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="9.668px" height="9.668px" viewBox="0 0 9.668 9.668" enable-background="new 0 0 9.668 9.668" xml:space="preserve">
-							<path fill="#C9C9C9" d="M9.48,7.269c0.251,0.252,0.251,0.66,0,0.912l-1.3,1.299c-0.251,0.252-0.659,0.252-0.911,0L4.833,7.045 L2.4,9.479c-0.253,0.252-0.66,0.252-0.912,0L0.19,8.181c-0.253-0.252-0.253-0.66,0-0.912l2.434-2.435L0.189,2.399 c-0.252-0.252-0.252-0.661,0-0.913l1.298-1.299c0.253-0.251,0.66-0.251,0.913,0l2.434,2.437l2.436-2.436 c0.252-0.252,0.661-0.252,0.911,0l1.3,1.298c0.251,0.252,0.251,0.661,0,0.913L7.044,4.833L9.48,7.269z"/>
+							<path d="M9.48,7.269c0.251,0.252,0.251,0.66,0,0.912l-1.3,1.299c-0.251,0.252-0.659,0.252-0.911,0L4.833,7.045 L2.4,9.479c-0.253,0.252-0.66,0.252-0.912,0L0.19,8.181c-0.253-0.252-0.253-0.66,0-0.912l2.434-2.435L0.189,2.399 c-0.252-0.252-0.252-0.661,0-0.913l1.298-1.299c0.253-0.251,0.66-0.251,0.913,0l2.434,2.437l2.436-2.436 c0.252-0.252,0.661-0.252,0.911,0l1.3,1.298c0.251,0.252,0.251,0.661,0,0.913L7.044,4.833L9.48,7.269z"/>
 						</svg>
 					</div>
 				</div>
@@ -212,12 +212,48 @@
 				</div>
 			</div>
 			<div class="new-expense-form">
-				<div class="bus-question">
+				<div class="bus-question hidden" id="busQ">
 					<h2 class="new-expense-question">Where did you make the expense?</h3>
-					<input class="bus-input" type="text" placeholder="Business name"></div>
+					<input class="bus-input" id="busNameInput" type="text" onkeypress="submitBusName" placeholder="Business name"></input>
 					<h3 class="instruction">PRESS ENTER TO CONTINUE</h3>
+				</div>
+				<div class="cat-question hidden" id="catQ">
+					<h2 class="new-expense-question">Which category does the expense belong in?</h3>
+					<input class="cat-input" id="catInput" type="text" onkeypress="submitCat" placeholder="Add a category"></input>
+					<h3 class="instruction">PRESS ENTER TO CONTINUE</h3>
+				</div>
+				<div class="cost-question hidden" id="costQ">
+					<h2 class="new-expense-question">How much was the expense?</h3>
+					<input class="cost-input" id="costInput" type="text" onkeypress="submitCost" placeholder="Enter cost in dollars"></input>
+					<h3 class="instruction">PRESS ENTER TO CONTINUE</h3>
+				</div>
+				<div class="items-question" id="itemsQ">
+					<h2 class="new-expense-question">What items did you purchase?</h3>
+					<input class="items-input" id="itemsInput" type="text" onkeypress="submitItems" placeholder="Enter item"></input>
+					<h3 class="instruction">PRESS ENTER TO ADD LIST</h3>
+					<ul class="item-list" id="itemList">
+						<li class="item">
+							<span>Chocolate</span>
+						</li>
+						<li class="item">
+							<span>Raisins</span>
+						</li>
+						<li class="item">
+							<span>Water bottles</span>
+						</li>
+						<li class="item">
+							<span>Chicken wings</span>
+						</li>
+					</ul>
+					<div class="action hidden">
+						<div class="button" id="saveExpBtn">
+							<div>SAVE</div>
+							<div>EXPENSE</div>
+						</div>
+					</div>
 				</div>
 			</div>
 		</section>
+		<script src="js/app.js"></script>	
 	</body>
 </html>
