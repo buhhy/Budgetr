@@ -1,7 +1,18 @@
-@(message: String)
+@(messages: Seq[String])
+<!DOCTYPE html>
 
-@main("Welcome to Play") {
-
-    @play20.welcome(message)
-
-}
+<html>
+    <head></head>
+    <body>
+        <div>
+            @messages.map { msg =>
+                <span>@msg</span>
+            }
+        </div>
+        <form action="@routes.Application.authenticate()" method="post">
+            <label for="phone">Phone #: </label><input type="tel" name="phone"/>
+            <label for="password">Password: </label><input type="password" name="password"/>
+            <input type="submit" value="login"/>
+        </form>
+    </body>
+</html>

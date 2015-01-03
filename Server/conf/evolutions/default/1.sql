@@ -38,6 +38,11 @@ CREATE TABLE expense(
   FOREIGN KEY (parent_id) REFERENCES expense_list(explist_id)
 );
 
+# Seed data
+
+INSERT INTO user(user_id, phone, email, password, registration_date) VALUES (0, 6507729203, 'jessicafung@live.ca', 'password2', CURRENT_TIMESTAMP());
+INSERT INTO user(user_id, phone, email, password, registration_date) VALUES (1, 6503907826, 'terence.lei@live.ca', 'password3', CURRENT_TIMESTAMP());
+
 # --- !Downs
 
 DROP TABLE expense;
