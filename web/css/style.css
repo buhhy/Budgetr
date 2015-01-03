@@ -36,33 +36,33 @@ html body div.header div.progress div {
   display: inline-block;
   margin-left: 0.15em;
 }
-html body div.header div.progress div.prog1 {
+html body div.header div.progress div.current-prog {
   background-color: #80BCA8;
 }
-html body div.header div.close-button {
+html body div.header div.cancel-button {
   display: table-cell;
   width: 100%;
   text-align: right;
 }
-html body div.header div.close-button:hover {
+html body div.header div.cancel-button:hover {
   cursor: pointer;
 }
-html body div.header div.close-button:hover span {
+html body div.header div.cancel-button:hover span {
   color: #8E8E8E;
 }
-html body div.header div.close-button:hover svg {
+html body div.header div.cancel-button:hover svg {
   fill: #8E8E8E;
 }
-html body div.header div.close-button span {
+html body div.header div.cancel-button span {
   padding-right: 0.5em;
   color: #C9C9C9;
 }
 @media (max-width: 700px) {
-  html body div.header div.close-button span {
+  html body div.header div.cancel-button span {
     display: none;
   }
 }
-html body div.header div.close-button svg {
+html body div.header div.cancel-button svg {
   fill: #C9C9C9;
 }
 html body div.action {
@@ -219,7 +219,6 @@ html body section.new-expense div.notification-box {
   padding: 0.4em;
   margin: 1em 0 0 0.5em;
   width: 93%;
-  display: none;
 }
 html body section.new-expense div.notification-box:hover {
   cursor: pointer;
