@@ -10,8 +10,8 @@
 			<div class="header">
 				<h1>Expense Log</h1>
 			</div>
-			<div class="day-log">
-				<h2 class="date-heading">TODAY 12/30</h2>
+			<div class="day-log" id="expenseLogDate">
+				<h2 class="date-heading">Saturday, January 3</h2>
 				<ul class="expense-list">
 					<li class="expense">
 						<div class="bus-name">
@@ -38,149 +38,6 @@
 				</ul>
 			</div>
 
-			<div class="day-log">
-				<h2 class="date-heading">12/28</h2>
-				<ul class="expense-list">
-					<li class="expense">
-						<div class="bus-name">
-							<span>Amazon</span>
-						</div>
-						<div class="items">
-							<span>flatware, cups, all-purpose cleaner</span>
-						</div>
-						<div class="cost">
-							<span>21.41</span>
-						</div>
-					</li>
-					<li class="expense">
-						<div class="bus-name">
-							<span>Bed Bath and Beyond</span>
-						</div>
-						<div class="items">
-							<span>bed linens, candles, lamps, fridge magnets</span>
-						</div>
-						<div class="cost">
-							<span>2.70</span>
-						</div>
-					</li>
-					<li class="expense">
-						<div class="bus-name">
-							<span>Amazon</span>
-						</div>
-						<div class="items">
-							<span>flatware, cups, all-purpose cleaner</span>
-						</div>
-						<div class="cost">
-							<span>21.41</span></div>
-					</li>
-					<li class="expense">
-						<div class="bus-name">
-							<span>Amazon</span>
-						</div>
-						<div class="items">
-							<span>flatware, cups, all-purpose cleaner</span>
-						</div>
-						<div class="cost">
-							<span>21.41</span>
-						</div>
-					</li>
-				</ul>
-			</div>
-
-			<div class="day-log">
-				<h2 class="date-heading">12/28</h2>
-				<ul class="expense-list">
-					<li class="expense">
-						<div class="bus-name">
-							<span>Amazon</span>
-						</div>
-						<div class="items">
-							<span>flatware, cups, all-purpose cleaner</span>
-						</div>
-						<div class="cost">
-							<span>21.41</span>
-						</div>
-					</li>
-					<li class="expense">
-						<div class="bus-name">
-							<span>Bed Bath and Beyond</span>
-						</div>
-						<div class="items">
-							<span>bed linens, candles, lamps, fridge magnets</span>
-						</div>
-						<div class="cost">
-							<span>2.70</span>
-						</div>
-					</li>
-					<li class="expense">
-						<div class="bus-name">
-							<span>Amazon</span>
-						</div>
-						<div class="items">
-							<span>flatware, cups, all-purpose cleaner</span>
-						</div>
-						<div class="cost">
-							<span>21.41</span>
-						</div>
-					</li>
-					<li class="expense">
-						<div class="bus-name">
-							<span>Amazon</span>
-						</div>
-						<div class="items">
-							<span>flatware, cups, all-purpose cleaner</span>
-						</div>
-						<div class="cost">
-							<span>21.41</span>
-						</div>
-					</li>
-					<li class="expense">
-						<div class="bus-name">
-							<span>Amazon</span>
-						</div>
-						<div class="items">
-							<span>flatware, cups, all-purpose cleaner</span>
-						</div>
-						<div class="cost">
-							<span>21.41</span>
-						</div>
-					</li>
-					<li class="expense">
-						<div class="bus-name">
-							<span>Bed Bath and Beyond</span>
-						</div>
-						<div class="items">
-							<span>bed linens, candles, lamps, fridge magnets</span>
-						</div>
-						<div class="cost">
-							<span>2.70</span>
-						</div>
-					</li>
-					<li class="expense">
-						<div class="bus-name">
-							<span>Amazon</span>
-						</div>
-						<div class="items">
-							<span>flatware, cups, all-purpose cleaner</span>
-						</div>
-						<div class="cost">
-							<span>21.41</span>
-						</div>
-					</li>
-					<li class="expense">
-						<div class="bus-name">
-							<span>Amazon</span>
-						</div>
-						<div class="items">
-							<span>flatware, cups, all-purpose cleaner</span>
-						</div>
-						<div class="cost">
-							<span>21.41</span>
-						</div>
-					</li>
-				</ul>
-			</div>
-
 			<div class="action">
 				<div class="button" id="newExpBtn">
 					<div>NEW</div>
@@ -194,25 +51,25 @@
 				<div class="topbar">
 					<h1>New Expense</h1>
 					<div class="progress">
-						<div class="prog1"></div>
-						<div class="prog2"></div>
-						<div class="prog3"></div>
-						<div class="prog4"></div>
+						<div id="prog1"></div>
+						<div id="prog2"></div>
+						<div id="prog3"></div>
+						<div id="prog4"></div>
 					</div>
-					<div class="close-button" id="cancelBtn">
-						<span>Close</span>
+					<div class="cancel-button" id="cancelBtn">
+						<span>Cancel</span>
 						<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="9.668px" height="9.668px" viewBox="0 0 9.668 9.668" enable-background="new 0 0 9.668 9.668" xml:space="preserve">
 							<path d="M9.48,7.269c0.251,0.252,0.251,0.66,0,0.912l-1.3,1.299c-0.251,0.252-0.659,0.252-0.911,0L4.833,7.045 L2.4,9.479c-0.253,0.252-0.66,0.252-0.912,0L0.19,8.181c-0.253-0.252-0.253-0.66,0-0.912l2.434-2.435L0.189,2.399 c-0.252-0.252-0.252-0.661,0-0.913l1.298-1.299c0.253-0.251,0.66-0.251,0.913,0l2.434,2.437l2.436-2.436 c0.252-0.252,0.661-0.252,0.911,0l1.3,1.298c0.251,0.252,0.251,0.661,0,0.913L7.044,4.833L9.48,7.269z"/>
 						</svg>
 					</div>
 				</div>
-				<div class="notification-box">
+				<div class="notification-box" id="notif">
 					<h3 class="notification">TIP: SCROLL DOWNWARDS TO GO BACK!</h3>
 					<h3 class="dismiss">DISMISS</h3>
 				</div>
 			</div>
 			<div class="new-expense-form">
-				<div class="bus-question hidden" id="busQ">
+				<div class="bus-question" id="busQ">
 					<h2 class="new-expense-question">Where did you make the expense?</h3>
 					<input class="bus-input" id="busNameInput" type="text" onkeypress="submitBusName" placeholder="Business name"></input>
 					<h3 class="instruction">PRESS ENTER TO CONTINUE</h3>
@@ -227,7 +84,7 @@
 					<input class="cost-input" id="costInput" type="text" onkeypress="submitCost" placeholder="Enter cost in dollars"></input>
 					<h3 class="instruction">PRESS ENTER TO CONTINUE</h3>
 				</div>
-				<div class="items-question" id="itemsQ">
+				<div class="items-question hidden" id="itemsQ">
 					<h2 class="new-expense-question">What items did you purchase?</h3>
 					<input class="items-input" id="itemsInput" type="text" onkeypress="submitItems" placeholder="Enter item"></input>
 					<h3 class="instruction">PRESS ENTER TO ADD LIST</h3>

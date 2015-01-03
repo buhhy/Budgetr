@@ -6,6 +6,7 @@ var expenseFormEl = document.getElementById("newExpenseForm");
 var newExpenseBtn = document.getElementById("newExpBtn");
 var cancelBtn = document.getElementById("cancelBtn");
 var saveBtn = document.getElementById("saveExpBtn");
+var notifBtn = document.getElementById("notif");
 
 // Question block elements
 var busQ = document.getElementById("busQ");
@@ -19,8 +20,9 @@ var catInputEl = document.getElementById("catInput");
 var costInputEl = document.getElementById("costInput");
 var itemsInputEl = document.getElementById("itemsInput");
 
-// Item List
+// Other DOM elements
 var itemListEl = document.getElementById("itemList");
+var expenseLogDate = document.getElementById("expenseLogDate");
 
 // Expense class
 var Expense = function() {
@@ -39,6 +41,8 @@ newExpBtn.onclick = function() {
 	expenseLogEl.classList.add('hidden');
 	expenseFormEl.classList.remove('hidden');
 	newExpense = new Expense();
+	document.getElementById("prog1").classList.add('current-prog');
+	busNameInputEl.focus();
 }
 
 cancelBtn.onclick = function() {
@@ -46,7 +50,7 @@ cancelBtn.onclick = function() {
 	if (input == true) {
 		expenseLogEl.classList.remove('hidden');
 		expenseFormEl.classList.add('hidden');
-		busNameInputEl.value="";
+		resetExpenseForm();
 	}
 }
 
@@ -55,8 +59,12 @@ saveBtn.onclick = function() {
 	console.log("newExpense.category");
 	console.log("newExpense.cost");
 	console.log("newExpense.items");
+	resetExpenseForm();
 }
 
+notifBtn.onclick = function() {
+	notifBtn.classList.add('hidden');
+} 
 // Functions for submitting data
 function submitBusName(event) {
 	if (event.keyCode === 13) {
@@ -64,6 +72,8 @@ function submitBusName(event) {
 		console.log(newExpense.busName);
 		busQ.classList.add('hidden');
 		catQ.classList.remove('hidden');
+		document.getElementById("prog2").classList.add('current-prog');
+		catInputEl.focus();
 	}
 }
 
@@ -73,6 +83,8 @@ function submitCat(event) {
 		console.log(newExpense.category);
 		catQ.classList.add('hidden');
 		costQ.classList.remove('hidden');
+		document.getElementById("prog3").classList.add('current-prog');
+		costInputEl.focus();
 	}
 }
 
@@ -82,6 +94,8 @@ function submitCost(event) {
 		console.log(newExpense.cost);
 		costQ.classList.add('hidden');
 		itemsQ.classList.remove('hidden');
+		document.getElementById("prog4").classList.add('current-prog');
+		itemsInputEl.focus();
 	}
 }
 
@@ -99,7 +113,7 @@ function newListItem(items) {
 	newSpan.innerHTML = items;
 	newLi.appendChild(newSpan);
 	itemsInputEl.value="";
-	var existingListItems = document.getElementById("itemList").getElementsByTagName("li");
+	var existingListItems = itemListEl.getElementsByTagName("li");
 	if (existingListItems.length = 0) {
 		itemListEl.appendChild(newLi);
 	} else {
@@ -107,8 +121,50 @@ function newListItem(items) {
 	}
 }
 
+// Checks the time
+
+
+// Creates an expense log date
+function newExpenseLogDate() {
+	var currentTime = new Date();
+	var options = { weekday: 'long', month: 'long', day: 'numeric', timeZone: 'America/Los_Angeles' }
+	currentTime = currentTime.toLocaleDateString('en-US', options);
+	
+	function checkTime() {
+		var lastDayLog = expenseLogDate.getElementsByTagName("h2")[0].innerHTML;
+		if (lastDayLog == currentTime) {
+			console.log("the same!");
+		} else {
+			console.log("not the same!");
+			var newDateHeading = document.createElement("h2").classList.add('date-heading');
+			newDateHeading.innerHTML = currentTime;
+		}
+	}
+	checkTime();
+}
+
+newExpenseLogDate();
+
 // Event Listeners
 busNameInput.addEventListener("keypress", submitBusName)
 catInput.addEventListener("keypress", submitCat)
 costInput.addEventListener("keypress", submitCost)
 itemsInput.addEventListener("keypress", submitItems)
+
+// Reset expense form 
+function resetExpenseForm() {
+	busNameInputEl.value="";
+	catInputEl.value="";
+	costInputEl.value="";
+	itemsInputEl.value="";
+	itemListEl.innerHTML="";
+	itemsQ.classList.add('hidden');
+	busQ.classList.remove('hidden');
+	expenseFormEl.classList.add('hidden');
+	expenseLogEl.classList.remove('hidden');	
+	document.getElementById("prog1").classList.remove('current-prog');
+	document.getElementById("prog2").classList.remove('current-prog');
+	document.getElementById("prog3").classList.remove('current-prog');
+	document.getElementById("prog4").classList.remove('current-prog');
+}
+
