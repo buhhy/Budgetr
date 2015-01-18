@@ -10,5 +10,8 @@ libraryDependencies ++= Seq(
   jdbc,
   anorm,
   cache,
-  ws
+  ws,
+  "mysql" % "mysql-connector-java" % "5.1.34",
+  "jp.t2v" %% "play2-auth" % "0.13.0",
+  "jp.t2v" %% "play2-auth-test" % "0.13.0" % "test"
 )
