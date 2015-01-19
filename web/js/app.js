@@ -137,7 +137,7 @@ function newExpenseLogDate() {
 		} else {
 			console.log("not the same!");
 			var newDateHeading = document.createElement("h2").classList.add('date-heading');
-			newDateHeading.innerHTML = currentTime;
+			//newDateHeading.innerHTML = currentTime;
 		}
 	}
 	checkTime();
