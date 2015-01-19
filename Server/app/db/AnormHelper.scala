@@ -45,6 +45,7 @@ class AnormHelper(val tableName: String, val createDateColumn: Option[String] = 
 
     val (newInsertValues, createDate) = createDateColumn match {
       case Some(cdc) =>
+        // TODO(tlei): use UTC time zone
         val createDate = createDateOpt.getOrElse(new DateTime())
 
         // Remove the create date key provided in insertValues and add the newly instantiated
