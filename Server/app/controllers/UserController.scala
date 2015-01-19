@@ -8,13 +8,13 @@ import play.api.libs.json.Json
 import play.api.mvc.{Action, Controller}
 
 object UserController extends Controller with AuthElement with AuthenticationConfig {
-  implicit val jw = User.JsonWriter
+  implicit val jw = User.InsertedJsonWriter
   implicit val jr = User.JsonReader
 
   def newUser = Action { implicit request =>
     request.body.asJson match {
       case Some(json) =>
-        val newUser = (json \ "value").as[User]
+        val newUser = (json \ "value").as[models.User]
         DBUser.insert(newUser) match {
           case Left(result) =>
             Ok(Json.toJson(result))

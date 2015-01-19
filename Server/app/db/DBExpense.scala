@@ -15,7 +15,9 @@ object DBExpense {
   private[db] val C_CID = "creator_id"
   private[db] val C_Amt = "amount"
   private[db] val C_CDate = "create_date"
-  private[db] val helper = new AnormHelper(TableName, Some(C_CDate))
+
+  private val helper = new AnormHelper(TableName)
+  private val insertHelper = new AnormInsertHelper(TableName, C_CDate)
 
   val ExpenseParser =
     (long(C_ID) ~ str(C_Loc) ~ str(C_Desc) ~ long(C_PID) ~
@@ -24,7 +26,7 @@ object DBExpense {
         InsertedExpense(id, new DateTime(date), Expense(loc, desc, pid, cid, amt))
     }
 
-  def toData(exp: Expense, withId: Boolean = false): Seq[NamedParameter] = {
+  def toData(exp: Expense): Seq[NamedParameter] = {
     Seq(
       C_Loc -> exp.location,
       C_Desc -> exp.desc,
@@ -40,12 +42,12 @@ object DBExpense {
 
 
   def insert(exp: Expense): Either[InsertedExpense, ErrorType] = {
-    helper.insert(toData(exp, withId = true), None).fold(
-      id => Left(InsertedExpense(id._1, id._2.get, exp)),
+    insertHelper.insert(toData(exp), None).fold(
+      id => Left(InsertedExpense(id._1, id._2, exp)),
       err => Right(err))
   }
 
   def update(id: Long, exp: Expense) =
-    helper.update(toData(exp, withId = false), Seq(idColumn(id)))
+    helper.update(toData(exp), Seq(idColumn(id)))
   def delete(id: Long) = helper.delete(Seq(idColumn(id)))
 }

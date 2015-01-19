@@ -3,7 +3,7 @@ package db
 import anorm.SqlParser._
 import anorm.{NamedParameter, _}
 import controllers.common.{AuthenticationError, DBError, ErrorType}
-import models.User
+import models.{InsertedUser, User}
 import org.joda.time.DateTime
 import play.api.Play.current
 import play.api.db.DB
@@ -16,64 +16,65 @@ object DBUser {
   private val C_Email = "email"
   private val C_Password = "password"
   private val C_CDate = "create_date"
-  private val helper = new AnormHelper(TableName, Some(C_CDate))
+
+  private val helper = new AnormHelper(TableName)
+  private val insertHelper = new AnormInsertHelper(TableName, C_CDate)
 
   val UserParser =
     (long(C_ID) ~ str(C_Phone) ~ str(C_Email) ~ str(C_Password) ~ date(C_CDate)).map {
       case id ~ phone ~ email ~ pass ~ date =>
-        User(Some(id), phone, email, pass, Some(new DateTime(date)))
+        InsertedUser(id, new DateTime(date), User(phone, email, pass))
     }
 
 
 
-  def toData(user: User, withId: Boolean = false): Seq[NamedParameter] = {
-    val values: Seq[NamedParameter] = Seq(
+  def toData(user: User): Seq[NamedParameter] = {
+    Seq(
       C_Phone -> user.phone,
       C_Email -> user.email,
-      C_Password -> user.password,
-      C_CDate -> user.createDate)
-
-    if (withId)
-      values ++ idColumns(user.userId)
-    else
-      values
+      C_Password -> user.password)
   }
 
-  def idColumns(id: Option[Long]): Seq[NamedParameter] =
-    id.collect { case n => NamedParameter(C_ID, n)}.toSeq
+  def toData(user: InsertedUser): Seq[NamedParameter] = {
+    toData(user.user) ++ Seq[NamedParameter](
+      idColumn(user.userId),
+      C_CDate -> user.createDate)
+  }
 
-  def insert(user: User): Either[User, ErrorType] = {
-    helper.insert(toData(user, withId = true), user.createDate).fold(
-      id => Left(user.copy(userId = Some(id._1), createDate = id._2)),
+  def idColumn(id: Long): NamedParameter = NamedParameter(C_ID, id)
+
+  def insert(user: User): Either[InsertedUser, ErrorType] = {
+    insertHelper.insert(toData(user), None).fold(
+      id => Left(InsertedUser(id._1, id._2, user)),
       err => Right(err))
   }
 
-  def update(user: User) =
-    helper.update(toData(user, withId = false), idColumns(user.userId))
+  def update(id: Long, user: User) =
+    helper.update(toData(user), Seq(idColumn(id)))
 
-  def delete(id: Long) = helper.delete(idColumns(Some(id)))
+  def delete(id: Long) = helper.delete(Seq(idColumn(id)))
 
-  def find(id: Long): Either[User, ErrorType] = {
+  def find(id: Long): Either[InsertedUser, ErrorType] = {
     DB.withConnection { implicit conn =>
-      helper.runSql {
+      AnormHelper.runSql {
         anorm.SQL(
           s"""
-              |SELECT * FROM $TableName WHERE $C_ID = {$C_ID}
+              |SELECT * FROM $TableName WHERE $C_ID = ${AnormHelper.replaceStr(C_ID)}
             """.stripMargin)
-            .on(idColumns(Some(id)): _*).as(UserParser.singleOpt)
+            .on(idColumn(id)).as(UserParser.singleOpt)
             .map(Left(_)).getOrElse(Right(DBError(s"Could not find user with id `$id`.")))
       }
     }
   }
 
-  def authenticate(phone: String, password: String): Either[User, ErrorType] = {
+  def authenticate(phone: String, password: String): Either[InsertedUser, ErrorType] = {
     DB.withConnection { implicit conn =>
-      helper.runSql {
+      AnormHelper.runSql {
         anorm.SQL(
           s"""
             |SELECT * FROM $TableName
-            |WHERE $TableName.$C_Phone = {$C_Phone}
-            |  AND $TableName.$C_Password = {$C_Password}
+            |WHERE $TableName.$C_Phone = ${AnormHelper.replaceStr(C_Phone)}
+            |  AND $TableName.$C_Password = ${AnormHelper.replaceStr(C_Password)}
           """.stripMargin
         ).on(C_Phone -> phone, C_Password -> password).as(UserParser.singleOpt)
             .map(Left(_)).getOrElse(

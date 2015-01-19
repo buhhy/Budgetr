@@ -15,7 +15,9 @@ object DBExpenseList {
   private val C_Name = "name"
   private val C_Desc = "description"
   private val C_CDate = "create_date"
-  private val helper = new AnormHelper(TableName, createDateColumn = Some(C_CDate))
+
+  private val helper = new AnormHelper(TableName)
+  private val insertHelper = new AnormInsertHelper(TableName, C_CDate)
 
   val ExpenseListParser =
     (long(C_ID) ~ long(C_CID) ~ str(C_Name) ~ str(C_Desc) ~ date(C_CDate)).map {
@@ -39,8 +41,8 @@ object DBExpenseList {
   def idColumn(id: Long): NamedParameter = NamedParameter(C_ID, id)
 
   def insert(explist: ExpenseList): Either[InsertedExpenseList, ErrorType] = {
-    helper.insert(toData(explist, withId = true), None).fold(
-      id => Left(InsertedExpenseList(id._1, id._2.get, explist)),
+    insertHelper.insert(toData(explist, withId = true), None).fold(
+      id => Left(InsertedExpenseList(id._1, id._2, explist)),
       err => Right(err))
   }
 
@@ -51,10 +53,10 @@ object DBExpenseList {
 
   def find(id: Long): Either[InsertedExpenseList, ErrorType] = {
     DB.withConnection { implicit conn =>
-      helper.runSql {
+      AnormHelper.runSql {
         anorm.SQL(
           s"""
-             |SELECT * FROM $TableName WHERE $C_ID = ${helper.replaceStr(C_ID)}
+             |SELECT * FROM $TableName WHERE $C_ID = ${AnormHelper.replaceStr(C_ID)}
            """.stripMargin)
             .on(idColumn(id))
             .as(ExpenseListParser.singleOpt)
@@ -66,11 +68,11 @@ object DBExpenseList {
 
   def findAssociatedExpenses(id: Long): Either[Seq[InsertedExpense], ErrorType] = {
     DB.withConnection { implicit conn =>
-      helper.runSql {
+      AnormHelper.runSql {
         Left(anorm.SQL(
           s"""
              |SELECT * FROM ${DBExpense.TableName}
-             |  WHERE ${DBExpense.C_PID} = ${helper.replaceStr(C_ID)}
+             |  WHERE ${DBExpense.C_PID} = ${AnormHelper.replaceStr(C_ID)}
            """.stripMargin)
             .on(idColumn(id))
             .as(DBExpense.ExpenseParser.*))

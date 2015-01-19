@@ -6,27 +6,29 @@ import play.api.libs.functional.syntax._
 import play.api.libs.json.JsPath
 
 sealed trait Role
+
 case object NormalUser extends Role
+
 case object Administrator extends Role
 
-case class User(
-  userId: Option[Long], phone: String, email: String, password: String,
-  createDate: Option[DateTime], role: Role = NormalUser)
+case class User(phone: String, email: String, password: String, role: Role = NormalUser)
+
+case class InsertedUser(userId: Long, createDate: DateTime, user: User)
 
 object User {
-  val JsonReader =
-    ((JsPath \ "userId").readNullable[Long] and
-        (JsPath \ "phone").read[String] and
+  private val JsonWriterBase = (JsPath \ "phone").write[String] and
+      (JsPath \ "email").write[String] and
+      (JsPath \ "password").write[String]
+
+  val JsonReader = ((JsPath \ "phone").read[String] and
         (JsPath \ "email").read[String] and
-        (JsPath \ "password").read[String]).apply { (id, phone, email, pass) =>
-      User(id, phone, email, pass, None)
+        (JsPath \ "password").read[String]).apply { (phone, email, pass) =>
+      User(phone, email, pass)
     }
 
-  val JsonWriter = ((JsPath \ "userId").writeNullable[Long] and
-        (JsPath \ "phone").write[String] and
-        (JsPath \ "email").write[String] and
-        (JsPath \ "password").write[String] and
-        (JsPath \ "createDate").writeNullable[DateTime]).apply { user: User =>
-    (user.userId, user.phone, user.email, user.password, user.createDate)
-  }
+  val NewJsonWriter = JsonWriterBase.apply { user: User => (user.phone, user.email, user.password)}
+
+  val InsertedJsonWriter = ((JsPath \ "userId").write[Long] and
+      (JsPath \ "createDate").write[DateTime]
+      and NewJsonWriter).apply(unlift(InsertedUser.unapply))
 }

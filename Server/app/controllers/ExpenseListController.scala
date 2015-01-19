@@ -15,8 +15,7 @@ object ExpenseListController extends Controller with LoginLogout
   implicit val ejw = Expense.NewJsonWriter
 
   def newExpenseList = StackAction(AuthorityKey -> NormalUser) { implicit request =>
-    // TODO(tlei): not cool
-    val userId = loggedIn.userId.get
+    val userId = loggedIn.userId
     implicit val eljr = ExpenseList.jsonReaderFromUserId(userId)
 
     request.body.asJson match {
@@ -25,7 +24,7 @@ object ExpenseListController extends Controller with LoginLogout
         DBExpenseList.insert(newList) match {
           case Left(insertedList) =>
             // Also add the creator to the expense list memberships list.
-            DBUserExpenseJoin.insert(UserExpenseJoin(userId, insertedList.expListId, None)) match {
+            DBUserExpenseJoin.insert(UserExpenseJoin(userId, insertedList.expListId)) match {
               case Left(insertedJoin) =>
                 Ok(Json.toJson(insertedList))
               case Right(error) =>
@@ -55,7 +54,7 @@ object ExpenseListController extends Controller with LoginLogout
 
   def addUserToExpenseList(eid: Long, uid: Long) =
     StackAction(AuthorityKey -> NormalUser) { implicit request =>
-      DBUserExpenseJoin.insert(UserExpenseJoin(uid, eid, None)) match {
+      DBUserExpenseJoin.insert(UserExpenseJoin(uid, eid)) match {
         case Left(insertedJoin) =>
           Ok(Json.obj())
         case Right(error) =>

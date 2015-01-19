@@ -22,7 +22,7 @@ trait AuthenticationConfig extends AuthConfig {
    * `String`, `Int`, `Long` and so on.
    */
   type Id = Long
-  type User = models.User
+  type User = models.InsertedUser
 
   /**
    * A type that is defined by every action for authorization.
@@ -57,7 +57,7 @@ trait AuthenticationConfig extends AuthConfig {
    */
   def loginSucceeded(request: RequestHeader)(implicit ctx: ExecutionContext): Future[Result] = {
     val uri = request.session.get(ACCESS_URI_KEY)
-      .getOrElse(routes.Application.dashboard().url.toString)
+        .getOrElse(routes.Application.dashboard().url.toString)
     Future.successful(Results.Redirect(uri).withSession(request.session - "access_uri"))
   }
 
@@ -90,10 +90,10 @@ trait AuthenticationConfig extends AuthConfig {
    */
   def authorize(user: User, authority: Authority)
       (implicit ctx: ExecutionContext): Future[Boolean] = Future.successful {
-    (user.role, authority) match {
-      case (Administrator, _)       => true
+    (user.user.role, authority) match {
+      case (Administrator, _) => true
       case (NormalUser, NormalUser) => true
-      case _                        => false
+      case _ => false
     }
   }
 

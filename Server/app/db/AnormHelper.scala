@@ -8,16 +8,12 @@ import play.api.db.DB
 import play.api.Play.current
 
 object AnormHelper {
-}
+  private[db] val SingleIdParser = SqlParser.scalar[Long].single
 
-class AnormHelper(val tableName: String, val createDateColumn: Option[String] = None) {
   def replaceStr(str: String) = s"{$str}"
+
   def namedParametersToEqualsStrings(nps: Seq[NamedParameter]) =
     nps.map { n => s"${n.name} = ${replaceStr(n.name)}"}
-
-  private val SingleIdParser = SqlParser.scalar[Long].single
-
-  implicit def s2s(sym: Symbol): String = sym.name
 
   def runSql[T](func: => Either[T, ErrorType]): Either[T, ErrorType] = {
     try {
@@ -29,39 +25,35 @@ class AnormHelper(val tableName: String, val createDateColumn: Option[String] = 
         Right(DBError("Oops, a database error occurred."))
     }
   }
+}
 
-  def insert(insertValues: Seq[NamedParameter]): Either[(Long, Option[DateTime]), ErrorType] =
-    insert(insertValues, SingleIdParser, None)
+class AnormInsertHelper(val tableName: String, val createDateColumn: String) {
+  def insert(insertValues: Seq[NamedParameter]): Either[(Long, DateTime), ErrorType] =
+    insert(insertValues, AnormHelper.SingleIdParser, None)
 
   def insert(
       insertValues: Seq[NamedParameter],
-      createDateOpt: Option[DateTime]): Either[(Long, Option[DateTime]), ErrorType] =
-    insert[Long](insertValues, SingleIdParser, createDateOpt)
+      createDateOpt: Option[DateTime]): Either[(Long, DateTime), ErrorType] =
+    insert[Long](insertValues, AnormHelper.SingleIdParser, createDateOpt)
 
   def insert[ResultType](
       insertValues: Seq[NamedParameter],
       idColumnParser: ResultSetParser[ResultType],
-      createDateOpt: Option[DateTime]): Either[(ResultType, Option[DateTime]), ErrorType] = {
+      createDateOpt: Option[DateTime]): Either[(ResultType, DateTime), ErrorType] = {
 
-    val (newInsertValues, createDate) = createDateColumn match {
-      case Some(cdc) =>
-        // TODO(tlei): use UTC time zone
-        val createDate = createDateOpt.getOrElse(new DateTime())
+    // TODO(tlei): use UTC time zone
+    val createDate = createDateOpt.getOrElse(new DateTime())
 
-        // Remove the create date key provided in insertValues and add the newly instantiated
-        // date value instead.
-        val niv = insertValues.filterNot { v => v.name.equals(cdc)} :+
-            NamedParameter(cdc, createDate)
-        (niv, Some(createDate))
-      case None =>
-        (insertValues, None)
-    }
+    // Remove the create date key provided in insertValues and add the newly instantiated
+    // date value instead.
+    val newInsertValues = insertValues.filterNot { v => v.name.equals(createDateColumn)} :+
+        NamedParameter(createDateColumn, createDate)
 
     val columnNames = newInsertValues.map(_.name).mkString(", ")
-    val columnValues = newInsertValues.map(_.name).map(replaceStr).mkString(", ")
+    val columnValues = newInsertValues.map(_.name).map(AnormHelper.replaceStr).mkString(", ")
 
     DB.withConnection { implicit conn =>
-      runSql {
+      AnormHelper.runSql {
         Left(SQL(
           s"""
             |INSERT INTO $tableName($columnNames)
@@ -70,15 +62,17 @@ class AnormHelper(val tableName: String, val createDateColumn: Option[String] = 
       }.fold(id => Left(id, createDate), Right(_))
     }
   }
+}
 
+class AnormHelper(val tableName: String) {
   def update(
       updatedValues: Seq[NamedParameter],
       conditions: Seq[NamedParameter]): Either[Int, ErrorType] = {
-    val setColumns = namedParametersToEqualsStrings(updatedValues).mkString(", ")
-    val idColumns = namedParametersToEqualsStrings(conditions).mkString(" AND ")
+    val setColumns = AnormHelper.namedParametersToEqualsStrings(updatedValues).mkString(", ")
+    val idColumns = AnormHelper.namedParametersToEqualsStrings(conditions).mkString(" AND ")
 
     DB.withConnection { implicit conn =>
-      runSql {
+      AnormHelper.runSql {
         Left(
           SQL(
             s"""
@@ -91,10 +85,10 @@ class AnormHelper(val tableName: String, val createDateColumn: Option[String] = 
   }
 
   def delete(conditions: Seq[NamedParameter]): Either[Int, ErrorType] = {
-    val idColumns = namedParametersToEqualsStrings(conditions).mkString(" AND ")
+    val idColumns = AnormHelper.namedParametersToEqualsStrings(conditions).mkString(" AND ")
 
     DB.withConnection { implicit conn =>
-      runSql {
+      AnormHelper.runSql {
         Left(SQL(
           s"""
             DELETE FROM $tableName WHERE $idColumns

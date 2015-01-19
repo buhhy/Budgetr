@@ -14,8 +14,7 @@ object ExpenseController extends Controller with LoginLogout
   implicit val iejw = Expense.InsertedJsonWriter
 
   def newExpense = StackAction(AuthorityKey -> NormalUser) { implicit request =>
-    // TODO(tlei): not cool
-    implicit val jr = Expense.jsonReaderFromUserId(loggedIn.userId.get)
+    implicit val jr = Expense.jsonReaderFromUserId(loggedIn.userId)
 
     request.body.asJson match {
       case Some(json) =>

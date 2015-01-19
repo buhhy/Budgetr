@@ -17,7 +17,7 @@ object Application extends Controller with LoginLogout with AuthElement with Aut
   }
 
   def dashboard = StackAction(AuthorityKey -> NormalUser) { implicit request =>
-    Ok(views.html.dashboard(loggedIn))
+    Ok(views.html.dashboard(loggedIn.user))
   }
 
   /**
@@ -47,12 +47,10 @@ object Application extends Controller with LoginLogout with AuthElement with Aut
       formWithErrors => Future.successful(BadRequest(views.html.index(form.errors.map(_.message)))),
       { case (phone, pass) =>
         DBUser.authenticate(phone, pass) match {
-          case Left(User(Some(id), _, _, _, _, _)) =>
-            gotoLoginSucceeded(id)
+          case Left(user) =>
+            gotoLoginSucceeded(user.userId)
           case Right(msg) =>
             Future.successful(Forbidden(views.html.index(Seq(msg.message))))
-          case _ =>
-            Future.successful(BadRequest(views.html.index(Seq("Something weird happened..."))))
         }
       }
     )
