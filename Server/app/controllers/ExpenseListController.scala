@@ -1,30 +1,38 @@
 package controllers
 
 import controllers.security.AuthenticationConfig
-import db.{DBExpense, DBExpenseList}
+import db.{DBExpenseList, DBUserExpenseJoin}
 import jp.t2v.lab.play2.auth.{AuthElement, LoginLogout}
-import models.{Expense, ExpenseList, NormalUser}
+import models.{Expense, ExpenseList, NormalUser, UserExpenseJoin}
 import play.api.libs.json.Json
 import play.api.mvc.Controller
 
 object ExpenseListController extends Controller with LoginLogout
     with AuthElement with AuthenticationConfig {
 
-  implicit val eljw = ExpenseList.JsonWriter
-  implicit val ejw = Expense.JsonWriter
+  implicit val eljw = ExpenseList.NewJsonWriter
+  implicit val ieljw = ExpenseList.InsertedJsonWriter
+  implicit val ejw = Expense.NewJsonWriter
 
   def newExpenseList = StackAction(AuthorityKey -> NormalUser) { implicit request =>
     // TODO(tlei): not cool
-    implicit val eljr = ExpenseList.buildJsonReader(loggedIn.userId.get)
+    val userId = loggedIn.userId.get
+    implicit val eljr = ExpenseList.jsonReaderFromUserId(userId)
 
     request.body.asJson match {
       case Some(json) =>
         val newList = (json \ "value").as[ExpenseList]
-        DBExpenseList.save(newList) match {
+        DBExpenseList.insert(newList) match {
+          case Left(insertedList) =>
+            // Also add the creator to the expense list memberships list.
+            DBUserExpenseJoin.insert(UserExpenseJoin(userId, insertedList.expListId, None)) match {
+              case Left(insertedJoin) =>
+                Ok(Json.toJson(insertedList))
+              case Right(error) =>
+                BadRequest(error.toJson)
+            }
           case Right(error) =>
             BadRequest(error.toJson)
-          case Left(result) =>
-            Ok(Json.toJson(result))
         }
       case None =>
         BadRequest("")
@@ -44,4 +52,14 @@ object ExpenseListController extends Controller with LoginLogout
         BadRequest(err.toJson)
     }
   }
+
+  def addUserToExpenseList(eid: Long, uid: Long) =
+    StackAction(AuthorityKey -> NormalUser) { implicit request =>
+      DBUserExpenseJoin.insert(UserExpenseJoin(uid, eid, None)) match {
+        case Left(insertedJoin) =>
+          Ok(Json.obj())
+        case Right(error) =>
+          BadRequest(error.toJson)
+      }
+    }
 }

@@ -5,26 +5,39 @@ import play.api.libs.json.{JsObject, JsPath}
 import play.api.libs.functional.syntax._
 
 case class Expense(
-    expId: Option[Long], location: String, desc: String,
-    parentListId: Long, creatorId: Long, amount: Int, createDate: Option[DateTime]) {
-  def toJson: JsObject = Expense.JsonWriter.writes(this)
+    location: String, desc: String, parentListId: Long,
+    creatorId: Long, amount: Int) {
+  def toJson: JsObject = Expense.NewJsonWriter.writes(this)
+}
+
+case class InsertedExpense(expId: Long, createDate: DateTime, expense: Expense) {
+  def toJson: JsObject = Expense.InsertedJsonWriter.writes(this)
 }
 
 object Expense {
-  def buildJsonReader(userId: Long) =
-    ((JsPath \ "expenseId").readNullable[Long] and
-        (JsPath \ "location").read[String] and
-        (JsPath \ "description").read[String] and
-        (JsPath \ "parentId").read[Long] and
-        (JsPath \ "amount").read[Int]).apply { (id, loc, desc, pid, am) =>
-      Expense(id, loc, desc, pid, userId, am, None)
-    }
+  private val JsonReaderBase = (JsPath \ "location").read[String] and
+      (JsPath \ "description").read[String] and
+      (JsPath \ "parentId").read[Long] and
+      (JsPath \ "amount").read[Int]
 
-  val JsonWriter = ((JsPath \ "expenseId").writeNullable[Long] and
-      (JsPath \ "location").write[String] and
+  private val JsonWriterBase = (JsPath \ "location").write[String] and
       (JsPath \ "description").write[String] and
       (JsPath \ "parentId").write[Long] and
       (JsPath \ "creatorId").write[Long] and
-      (JsPath \ "amount").write[Int] and
-      (JsPath \ "createDate").writeNullable[DateTime]).apply(unlift(Expense.unapply))
+      (JsPath \ "amount").write[Int]
+
+  val NewJsonReader =
+    (JsonReaderBase ~ (JsPath \ "creatorId").read[Long]).apply { (loc, desc, pid, am, cid) =>
+      Expense(loc, desc, pid, cid, am)
+    }
+
+  val NewJsonWriter = JsonWriterBase.apply(unlift(Expense.unapply))
+  val InsertedJsonWriter = ((JsPath \ "expenseId").write[Long] and
+      (JsPath \ "createDate").write[DateTime] and
+      NewJsonWriter).apply(unlift(InsertedExpense.unapply))
+
+  def jsonReaderFromUserId(userId: Long) =
+    JsonReaderBase.apply { (loc, desc, pid, am) =>
+      Expense(loc, desc, pid, userId, am)
+    }
 }

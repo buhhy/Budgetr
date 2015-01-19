@@ -3,52 +3,49 @@ package db
 import anorm.SqlParser._
 import anorm.{NamedParameter, ~}
 import controllers.common.ErrorType
-import models.Expense
+import models.{InsertedExpense, Expense}
 import org.joda.time.DateTime
 
 object DBExpense {
   private[db] val TableName = "expense"
   private[db] val C_ID = "exp_id"
-  private[db] val C_LOC = "location"
-  private[db] val C_DESC = "description"
+  private[db] val C_Loc = "location"
+  private[db] val C_Desc = "description"
   private[db] val C_PID = "parent_id"
   private[db] val C_CID = "creator_id"
-  private[db] val C_AMT = "amount"
-  private[db] val C_CDATE = "create_date"
-  private[db] val helper = new AnormHelper(TableName, Some(C_CDATE))
+  private[db] val C_Amt = "amount"
+  private[db] val C_CDate = "create_date"
+  private[db] val helper = new AnormHelper(TableName, Some(C_CDate))
 
   val ExpenseParser =
-    (long(C_ID) ~ str(C_LOC) ~ str(C_DESC) ~ long(C_PID) ~
-        long(C_CID) ~ int(C_AMT) ~ date(C_CDATE)).map {
+    (long(C_ID) ~ str(C_Loc) ~ str(C_Desc) ~ long(C_PID) ~
+        long(C_CID) ~ int(C_Amt) ~ date(C_CDate)).map {
       case id ~ loc ~ desc ~ pid ~ cid ~ amt ~ date =>
-        Expense(Some(id), loc, desc, pid, cid, amt, Some(new DateTime(date)))
+        InsertedExpense(id, new DateTime(date), Expense(loc, desc, pid, cid, amt))
     }
 
   def toData(exp: Expense, withId: Boolean = false): Seq[NamedParameter] = {
-    val values: Seq[NamedParameter] = Seq(
-      C_LOC -> exp.location,
-      C_DESC -> exp.desc,
+    Seq(
+      C_Loc -> exp.location,
+      C_Desc -> exp.desc,
       C_PID -> exp.parentListId,
       C_CID -> exp.creatorId,
-      C_AMT -> exp.amount,
-      C_CDATE -> exp.createDate)
-
-    if (withId)
-      values ++ idColumns(exp.expId)
-    else
-      values
+      C_Amt -> exp.amount)
   }
 
-  def idColumns(id: Option[Long]): Seq[NamedParameter] =
-    id.collect { case n => NamedParameter(C_ID, n) }.toSeq
+  def toData(exp: InsertedExpense): Seq[NamedParameter] =
+    toData(exp.expense) ++ Seq[NamedParameter](idColumn(exp.expId), C_CDate -> exp.createDate)
+
+  def idColumn(id: Long): NamedParameter = NamedParameter(C_ID, id)
 
 
-  def save(exp: Expense): Either[Expense, ErrorType] = {
-    helper.insert(toData(exp, withId = true), exp.createDate).fold(
-      id => Left(exp.copy(expId = Some(id._1), createDate = id._2)),
+  def insert(exp: Expense): Either[InsertedExpense, ErrorType] = {
+    helper.insert(toData(exp, withId = true), None).fold(
+      id => Left(InsertedExpense(id._1, id._2.get, exp)),
       err => Right(err))
   }
 
-  def update(exp: Expense) = helper.update(toData(exp, withId = false), idColumns(exp.expId))
-  def delete(id: Long) = helper.delete(idColumns(Some(id)))
+  def update(id: Long, exp: Expense) =
+    helper.update(toData(exp, withId = false), Seq(idColumn(id)))
+  def delete(id: Long) = helper.delete(Seq(idColumn(id)))
 }
