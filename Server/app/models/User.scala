@@ -8,5 +8,5 @@ case object NormalUser extends Role
 case object Administrator extends Role
 
 case class User(
-  userId: Option[Long], phone: Int,
-  email: String, password: String, registerDate: DateTime, role: Role = NormalUser)
+  userId: Option[Long], phone: String, email: String, password: String,
+  registerDate: Option[DateTime], role: Role = NormalUser)

@@ -2,10 +2,10 @@
 
 CREATE TABLE user(
   user_id BIGINT PRIMARY KEY NOT NULL AUTO_INCREMENT,
-  phone INT NOT NULL,
+  phone VARCHAR(32) NOT NULL,
   email VARCHAR(512) NOT NULL,
   password VARCHAR(512) NOT NULL,
-  registration_date DATETIME not NULL
+  create_date DATETIME not NULL
 );
 
 CREATE TABLE expense_list(
@@ -14,16 +14,16 @@ CREATE TABLE expense_list(
   name VARCHAR(1024) NOT NULL,
   description TEXT NOT NULL,
   create_date DATETIME NOT NULL,
-  FOREIGN KEY (creator_id) REFERENCES user(user_id)
+  FOREIGN KEY (creator_id) REFERENCES user(user_id) ON DELETE CASCADE
 );
 
 CREATE TABLE user_expense_join(
   user_id BIGINT NOT NULL,
   explist_id BIGINT NOT NULL,
-  join_date DATETIME NOT NULL,
+  create_date DATETIME NOT NULL,
   PRIMARY KEY (user_id, explist_id),
-  FOREIGN KEY (user_id) REFERENCES user(user_id),
-  FOREIGN KEY (explist_id) REFERENCES expense_list(explist_id)
+  FOREIGN KEY (user_id) REFERENCES user(user_id) ON DELETE CASCADE,
+  FOREIGN KEY (explist_id) REFERENCES expense_list(explist_id) ON DELETE CASCADE
 );
 
 CREATE TABLE expense(
@@ -33,15 +33,15 @@ CREATE TABLE expense(
   parent_id BIGINT NOT NULL,
   creator_id BIGINT NOT NULL,
   amount INT NOT NULL,
-  input_date DATETIME NOT NULL,
-  FOREIGN KEY (creator_id) REFERENCES user(user_id),
-  FOREIGN KEY (parent_id) REFERENCES expense_list(explist_id)
+  create_date DATETIME NOT NULL,
+  FOREIGN KEY (creator_id) REFERENCES user(user_id) ON DELETE CASCADE,
+  FOREIGN KEY (parent_id) REFERENCES expense_list(explist_id) ON DELETE CASCADE
 );
 
 # Seed data
 
-INSERT INTO user(user_id, phone, email, password, registration_date) VALUES (0, 6507729203, 'jessicafung@live.ca', 'password2', CURRENT_TIMESTAMP());
-INSERT INTO user(user_id, phone, email, password, registration_date) VALUES (1, 6503907826, 'terence.lei@live.ca', 'password3', CURRENT_TIMESTAMP());
+INSERT INTO user(phone, email, password, create_date) VALUES ('6507729203', 'jessicafung@live.ca', 'password2', CURRENT_TIMESTAMP());
+INSERT INTO user(phone, email, password, create_date) VALUES ('6503907826', 'terence.lei@live.ca', 'password3', CURRENT_TIMESTAMP());
 
 # --- !Downs
 

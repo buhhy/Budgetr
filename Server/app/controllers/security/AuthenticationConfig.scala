@@ -10,6 +10,12 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.reflect.ClassTag
 
 trait AuthenticationConfig extends AuthConfig {
+  /**
+   * Refers to the session key that identifies the original page a non-logged-in user attempts to
+   * reach. Retrieving the URI using this key allows us to redirect the user back to the original
+   * URI following successful log in.
+   */
+  val ACCESS_URI_KEY = "access_uri"
 
   /**
    * A type that is used to identify a user.
@@ -49,8 +55,11 @@ trait AuthenticationConfig extends AuthConfig {
   /**
    * Where to redirect the user after a successful login.
    */
-  def loginSucceeded(request: RequestHeader)(implicit ctx: ExecutionContext): Future[Result] =
-    Future.successful(Results.Redirect(routes.Application.dashboard()))
+  def loginSucceeded(request: RequestHeader)(implicit ctx: ExecutionContext): Future[Result] = {
+    val uri = request.session.get(ACCESS_URI_KEY)
+      .getOrElse(routes.Application.dashboard().url.toString)
+    Future.successful(Results.Redirect(uri).withSession(request.session - "access_uri"))
+  }
 
   /**
    * Where to redirect the user after logging out
@@ -64,14 +73,16 @@ trait AuthenticationConfig extends AuthConfig {
    */
   def authenticationFailed(request: RequestHeader)
       (implicit ctx: ExecutionContext): Future[Result] =
-    Future.successful(Results.Redirect(routes.Application.index()))
+    Future.successful(
+      Results.Redirect(routes.Application.index()).withSession(ACCESS_URI_KEY -> request.uri))
 
   /**
    * If authorization failed (usually incorrect password) redirect the user as follows:
    */
   def authorizationFailed(request: RequestHeader)
       (implicit ctx: ExecutionContext): Future[Result] =
-    Future.successful(Results.Redirect(routes.Application.index()))
+    Future.successful(
+      Results.Redirect(routes.Application.index()).withSession(ACCESS_URI_KEY -> request.uri))
 
   /**
    * A function that determines what `Authority` a user has.
