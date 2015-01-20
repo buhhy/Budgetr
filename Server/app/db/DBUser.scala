@@ -3,12 +3,12 @@ package db
 import anorm.SqlParser._
 import anorm.{NamedParameter, _}
 import controllers.common.{AuthenticationError, DBError, ErrorType}
+import controllers.security.PasswordHasher
 import models.{InsertedUser, User}
 import org.joda.time.DateTime
 import play.api.Play.current
 import play.api.db.DB
 
-// TODO(tlei): password hashing lol
 object DBUser {
   private val TableName = "user"
   private val C_ID = "user_id"
@@ -18,14 +18,13 @@ object DBUser {
   private val C_CDate = "create_date"
 
   private val helper = new AnormHelper(TableName)
-  private val insertHelper = new AnormInsertHelper(TableName, C_CDate)
+  private val insertHelper = AnormInsertHelper(TableName, C_CDate)
 
   val UserParser =
     (long(C_ID) ~ str(C_Phone) ~ str(C_Email) ~ str(C_Password) ~ date(C_CDate)).map {
       case id ~ phone ~ email ~ pass ~ date =>
         InsertedUser(id, new DateTime(date), User(phone, email, pass))
     }
-
 
 
   def toData(user: User): Seq[NamedParameter] = {
@@ -43,14 +42,19 @@ object DBUser {
 
   def idColumn(id: Long): NamedParameter = NamedParameter(C_ID, id)
 
-  def insert(user: User): Either[InsertedUser, ErrorType] = {
-    insertHelper.insert(toData(user), None).fold(
-      id => Left(InsertedUser(id._1, id._2, user)),
+  def insert(user: User): Either[InsertedUser, ErrorType] = insert(None, user)
+
+  def insert(id: Long, user: User): Either[InsertedUser, ErrorType] = insert(Some(id), user)
+
+  private def insert(id: Option[Long], user: User): Either[InsertedUser, ErrorType] = {
+    // Hash the password
+    val hashedPassword = user.copy(password = PasswordHasher.hashPassword(user.password))
+    insertHelper.insert(toData(hashedPassword) ++ id.map(idColumn), None).fold(
+      id => Left(InsertedUser(id._1, id._2, hashedPassword)),
       err => Right(err))
   }
 
-  def update(id: Long, user: User) =
-    helper.update(toData(user), Seq(idColumn(id)))
+  def update(id: Long, user: User) = helper.update(toData(user), Seq(idColumn(id)))
 
   def delete(id: Long) = helper.delete(Seq(idColumn(id)))
 
@@ -74,10 +78,13 @@ object DBUser {
           s"""
             |SELECT * FROM $TableName
             |WHERE $TableName.$C_Phone = ${AnormHelper.replaceStr(C_Phone)}
-            |  AND $TableName.$C_Password = ${AnormHelper.replaceStr(C_Password)}
           """.stripMargin
-        ).on(C_Phone -> phone, C_Password -> password).as(UserParser.singleOpt)
-            .map(Left(_)).getOrElse(
+        ).on(C_Phone -> phone).as(UserParser.singleOpt).map { u =>
+          if (PasswordHasher.checkPassword(password, u.user.password))
+            Some(Left(u))
+          else
+            None
+        }.flatten.getOrElse(
               Right(AuthenticationError("Could not login with the given username and password.")))
       }
     }

@@ -17,7 +17,7 @@ object DBExpenseList {
   private val C_CDate = "create_date"
 
   private val helper = new AnormHelper(TableName)
-  private val insertHelper = new AnormInsertHelper(TableName, C_CDate)
+  private val insertHelper = AnormInsertHelper(TableName, C_CDate)
 
   val ExpenseListParser =
     (long(C_ID) ~ long(C_CID) ~ str(C_Name) ~ str(C_Desc) ~ date(C_CDate)).map {

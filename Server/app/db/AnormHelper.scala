@@ -10,6 +10,9 @@ import play.api.Play.current
 object AnormHelper {
   private[db] val SingleIdParser = SqlParser.scalar[Long].single
 
+  // for join tables that might not have auto-generated ID columns
+  private[db] val SingleIdOptParser = SqlParser.scalar[Long].singleOpt
+
   def replaceStr(str: String) = s"{$str}"
 
   def namedParametersToEqualsStrings(nps: Seq[NamedParameter]) =
@@ -27,21 +30,19 @@ object AnormHelper {
   }
 }
 
-class AnormInsertHelper(val tableName: String, val createDateColumn: String) {
-  def insert(insertValues: Seq[NamedParameter]): Either[(Long, DateTime), ErrorType] =
-    insert(insertValues, AnormHelper.SingleIdParser, None)
+object AnormInsertHelper {
+  def apply(tableName: String, createDateColumn: String) =
+      new AnormInsertHelper[Long](tableName, createDateColumn, AnormHelper.SingleIdParser)
+}
+
+class AnormInsertHelper[ResultType](
+    val tableName: String, val createDateColumn: String,
+    val idColumnParser: ResultSetParser[ResultType]) {
 
   def insert(
       insertValues: Seq[NamedParameter],
-      createDateOpt: Option[DateTime]): Either[(Long, DateTime), ErrorType] =
-    insert[Long](insertValues, AnormHelper.SingleIdParser, createDateOpt)
+      createDateOpt: Option[DateTime] = None): Either[(ResultType, DateTime), ErrorType] = {
 
-  def insert[ResultType](
-      insertValues: Seq[NamedParameter],
-      idColumnParser: ResultSetParser[ResultType],
-      createDateOpt: Option[DateTime]): Either[(ResultType, DateTime), ErrorType] = {
-
-    // TODO(tlei): use UTC time zone
     val createDate = createDateOpt.getOrElse(new DateTime())
 
     // Remove the create date key provided in insertValues and add the newly instantiated

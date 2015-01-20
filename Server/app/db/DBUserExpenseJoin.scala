@@ -10,23 +10,19 @@ object DBUserExpenseJoin {
   private val C_EID = "explist_id"
   private val C_CDate = "create_date"
   private val helper = new AnormHelper("user_expense_join")
-  private val insertHelper = new AnormInsertHelper("user_expense_join", C_CDate)
-
-  private val IdParser = (long(C_UID) ~ long(C_EID)).map { case uid ~ eid => (uid, eid)}.singleOpt
+  private val insertHelper =
+    new AnormInsertHelper[Any]("user_expense_join", C_CDate, AnormHelper.SingleIdOptParser)
 
   def toData(uej: UserExpenseJoin): Seq[NamedParameter] = idColumns(uej)
 
-  def toData(uej: InsertedUserExpenseJoin) = {
+  def toData(uej: InsertedUserExpenseJoin): Seq[NamedParameter] =
     toData(uej.join) :+ NamedParameter(C_CDate, uej.createDate)
-  }
 
   def idColumns(uej: UserExpenseJoin) =
     Seq[NamedParameter](C_UID -> uej.userId, C_EID -> uej.expenseListId)
 
   def insert(uej: UserExpenseJoin): Either[InsertedUserExpenseJoin, ErrorType] = {
-    // TODO(tlei): inserting isn't going to actually have any row results, since no fields are
-    // being auto-generated and are provided instead
-    insertHelper.insert[Option[(Long, Long)]](toData(uej), IdParser, None)
+    insertHelper.insert(toData(uej), None)
         .fold(ret => Left(InsertedUserExpenseJoin(ret._2, uej)), err => Right(err))
   }
 
