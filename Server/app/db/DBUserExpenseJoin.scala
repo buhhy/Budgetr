@@ -1,17 +1,17 @@
 package db
 
-import anorm.SqlParser._
-import anorm.{NamedParameter, _}
+import anorm.NamedParameter
 import controllers.common.ErrorType
 import models.{InsertedUserExpenseJoin, UserExpenseJoin}
 
 object DBUserExpenseJoin {
-  private val C_UID = "user_id"
-  private val C_EID = "explist_id"
-  private val C_CDate = "create_date"
-  private val helper = new AnormHelper("user_expense_join")
+  private[db] val TableName = "user_expense_join"
+  private[db] val C_UID = "user_id"
+  private[db] val C_EID = "explist_id"
+  private[db] val C_CDate = "create_date"
+  private[db] val helper = new AnormHelper(TableName)
   private val insertHelper =
-    new AnormInsertHelper[Any]("user_expense_join", C_CDate, AnormHelper.SingleIdOptParser)
+    new AnormInsertHelper[Any](TableName, C_CDate, AnormHelper.SingleIdOptParser)
 
   def toData(uej: UserExpenseJoin): Seq[NamedParameter] = idColumns(uej)
 

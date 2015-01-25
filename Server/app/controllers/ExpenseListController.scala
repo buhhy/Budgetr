@@ -52,6 +52,16 @@ object ExpenseListController extends Controller with LoginLogout
     }
   }
 
+  def getExpenseLists = StackAction(AuthorityKey -> NormalUser) { implicit request =>
+    implicit val writer = ExpenseList.InsertedJsonWriter
+    DBExpenseList.filterLists(loggedIn.userId) match {
+      case Left(result) =>
+        Ok(Json.toJson(result.map(writer.writes)))
+      case Right(err) =>
+        BadRequest(err.toJson)
+    }
+  }
+
   def addUserToExpenseList(eid: Long, uid: Long) =
     StackAction(AuthorityKey -> NormalUser) { implicit request =>
       DBUserExpenseJoin.insert(UserExpenseJoin(uid, eid)) match {

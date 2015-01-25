@@ -40,6 +40,11 @@ object DBExpenseList {
 
   def idColumn(id: Long): NamedParameter = NamedParameter(C_ID, id)
 
+  /**
+   * TODO(tlei): when adding new lists, the creator should be automatically added to the
+   * [[DBUserExpenseJoin]] instead of manually
+   */
+
   def insert(explist: ExpenseList): Either[InsertedExpenseList, ErrorType] =
     insert(None, explist)
 
@@ -68,6 +73,22 @@ object DBExpenseList {
             .as(ExpenseListParser.singleOpt)
             .map(Left(_))
             .getOrElse(Right(DBError(s"Could not find an expense list with the given id `$id`.")))
+      }
+    }
+  }
+
+  def filterLists(userId: Long): Either[Seq[InsertedExpenseList], ErrorType] = {
+    val UEJ = DBUserExpenseJoin
+    DB.withConnection { implicit conn =>
+      AnormHelper.runSql {
+        Left(anorm.SQL(
+          s"""
+             |SELECT e.* FROM $TableName AS e INNER JOIN ${UEJ.TableName} AS uej
+             |  ON e.$C_ID = uej.${UEJ.C_EID}
+             |  WHERE uej.${UEJ.C_UID} = ${AnormHelper.replaceStr(UEJ.C_UID)}
+           """.stripMargin)
+            .on(UEJ.C_UID -> userId)
+            .as(ExpenseListParser.*))
       }
     }
   }
