@@ -17,7 +17,7 @@ object Application extends Controller with LoginLogout with AuthElement with Aut
   }
 
   def dashboard = StackAction(AuthorityKey -> NormalUser) { implicit request =>
-    Ok(views.html.dashboard(loggedIn.user))
+    Ok(views.html.dashboard(loggedIn))
   }
 
   /**
