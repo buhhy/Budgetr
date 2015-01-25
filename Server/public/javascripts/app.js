@@ -3,7 +3,7 @@ var expenseLogEl = document.getElementById("expenseLog");
 var expenseFormEl = document.getElementById("newExpenseForm");
 
 // Buttons
-var newExpenseBtn = document.getElementById("newExpBtn");
+var newExpBtn = document.getElementById("newExpBtn");
 var cancelBtn = document.getElementById("cancelBtn");
 var saveBtn = document.getElementById("saveExpBtn");
 var notifBtn = document.getElementById("notif");
