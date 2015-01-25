@@ -25,7 +25,7 @@ object DBExpenseList {
         InsertedExpenseList(id, new DateTime(date), ExpenseList(cid, name, desc))
     }
 
-  def toData(explist: ExpenseList, withId: Boolean = false): Seq[NamedParameter] = {
+  def toData(explist: ExpenseList): Seq[NamedParameter] = {
     Seq(
       C_CID -> explist.creatorId,
       C_Name -> explist.name,
@@ -40,14 +40,20 @@ object DBExpenseList {
 
   def idColumn(id: Long): NamedParameter = NamedParameter(C_ID, id)
 
-  def insert(explist: ExpenseList): Either[InsertedExpenseList, ErrorType] = {
-    insertHelper.insert(toData(explist, withId = true), None).fold(
+  def insert(explist: ExpenseList): Either[InsertedExpenseList, ErrorType] =
+    insert(None, explist)
+
+  def insert(id: Long, explist: ExpenseList): Either[InsertedExpenseList, ErrorType] =
+    insert(Some(id), explist)
+
+  def insert(id: Option[Long], explist: ExpenseList): Either[InsertedExpenseList, ErrorType] = {
+    insertHelper.insert(toData(explist) ++ id.map(idColumn), None).fold(
       id => Left(InsertedExpenseList(id._1, id._2, explist)),
       err => Right(err))
   }
 
   def update(id: Long, explist: ExpenseList) =
-    helper.update(toData(explist, withId = false), Seq(idColumn(id)))
+    helper.update(toData(explist), Seq(idColumn(id)))
 
   def delete(id: Long) = helper.delete(Seq(idColumn(id)))
 
