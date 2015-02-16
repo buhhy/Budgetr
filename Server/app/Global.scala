@@ -1,5 +1,5 @@
-import db.{DBUserExpenseJoin, DBExpenseList, DBUser}
-import models.{UserExpenseJoin, ExpenseList, User}
+import db.{DBExpenseCategory, DBUserExpenseJoin, DBExpenseList, DBUser}
+import models.{ExpenseCategory, UserExpenseJoin, ExpenseList, User}
 import org.joda.time.DateTimeZone
 import play.api.{Application, GlobalSettings, Logger}
 
@@ -11,12 +11,20 @@ object Global extends GlobalSettings {
 
   private val DefaultExpenseList = (1, ExpenseList(1, "Test list", "this is some good stuff"))
 
+  private val DefaultExpenseCategories = Seq(
+    (1, ExpenseCategory("Food", 1, 1)),
+    (2, ExpenseCategory("Transportation", 1, 1)),
+    (3, ExpenseCategory("Housing", 2, 1)))
+
   override def onStart(app: Application): Unit = {
     Logger.info("Setting global time zone to UTC...")
     DateTimeZone.setDefault(DateTimeZone.UTC)
 
     // TODO(tlei): remove seed data
-    val deleted = DefaultUsers.map { u =>
+
+    // Delete existing users.
+
+    val deleted1 = DefaultUsers.map { u =>
       DBUser.delete(u._1) match {
         case Left(x) => x
         case Right(error) =>
@@ -25,9 +33,11 @@ object Global extends GlobalSettings {
       }
     }.sum
 
-    Logger.info(s"Deleted $deleted default user entries.")
+    Logger.info(s"Deleted $deleted1 default user entries.")
 
-    val added = DefaultUsers.map { u =>
+    // Insert seed users.
+
+    val added1 = DefaultUsers.map { u =>
       DBUser.insert(u._1, u._2) match {
         case Left(x) => 1
         case Right(error) =>
@@ -36,7 +46,18 @@ object Global extends GlobalSettings {
       }
     }.sum
 
-    Logger.info(s"Added $added default user entries.")
+    Logger.info(s"Added $added1 default user entries.")
+
+    // Delete existing expense lists.
+
+    DBExpenseList.delete(DefaultExpenseList._1) match {
+      case Left(x) =>
+        Logger.info(s"Deleted $x default expense list entries.")
+      case Right(error) =>
+        Logger.error(error.message)
+    }
+
+    // Insert seed expense lists.
 
     DBExpenseList.insert(DefaultExpenseList._1, DefaultExpenseList._2) match {
       case Left(x) =>
@@ -54,5 +75,31 @@ object Global extends GlobalSettings {
       case Right(error) =>
         Logger.error(error.message)
     }
+
+    // Delete existing expense categories.
+
+    val deleted2 = DefaultExpenseCategories.map { c =>
+      DBExpenseCategory.delete(c._1) match {
+        case Left(x) => x
+        case Right(error) =>
+          Logger.error(error.message)
+          0
+      }
+    }.sum
+
+    Logger.info(s"Deleted $deleted2 default expense category entries.")
+
+    // Insert seed expense categories.
+
+    val added2 = DefaultExpenseCategories.map { c =>
+      DBExpenseCategory.insert(c._1, c._2) match {
+        case Left(x) => 1
+        case Right(error) =>
+          Logger.error(error.message)
+          0
+      }
+    }.sum
+
+    Logger.info(s"Added $added2 default expense category entries.")
   }
 }

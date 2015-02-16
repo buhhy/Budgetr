@@ -6,8 +6,8 @@ import models.{InsertedUserExpenseJoin, UserExpenseJoin}
 
 object DBUserExpenseJoin {
   private[db] val TableName = "user_expense_join"
-  private[db] val C_UID = "user_id"
-  private[db] val C_EID = "explist_id"
+  private[db] val C_UID = "user_ref_id"
+  private[db] val C_EID = "explist_ref_id"
   private[db] val C_CDate = "create_date"
   private[db] val helper = new AnormHelper(TableName)
   private val insertHelper =

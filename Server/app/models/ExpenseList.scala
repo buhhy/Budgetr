@@ -9,9 +9,13 @@ case class ExpenseList(creatorId: Long, name: String, desc: String) {
 }
 
 case class InsertedExpenseList(expListId: Long, createDate: DateTime, expenseList: ExpenseList) {
-  implicit val jw = Expense.InsertedJsonWriter
-  def toJson(expenses: Seq[InsertedExpense]): JsObject =
-    ExpenseList.InsertedJsonWriter.writes(this) ++ Json.obj("expenses" -> Json.toJson(expenses))
+  private implicit val ejw = Expense.InsertedJsonWriter
+  private implicit val ecjw = ExpenseCategory.InsertedJsonWriter
+
+  def toJson(expenses: Seq[InsertedExpense], categories: Seq[InsertedExpenseCategory]): JsObject =
+    ExpenseList.InsertedJsonWriter.writes(this) ++
+        Json.obj("expenses" -> Json.toJson(expenses)) ++
+        Json.obj("categories" -> Json.toJson(categories))
 }
 
 object ExpenseList {

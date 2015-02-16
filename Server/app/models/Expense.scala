@@ -6,7 +6,7 @@ import play.api.libs.functional.syntax._
 
 case class Expense(
     location: String, desc: String, parentListId: Long,
-    creatorId: Long, amount: Int) {
+    creatorId: Long, categoryId: Long, amount: Int) {
   def toJson: JsObject = Expense.NewJsonWriter.writes(this)
 }
 
@@ -18,17 +18,19 @@ object Expense {
   private val JsonReaderBase = (JsPath \ "location").read[String] and
       (JsPath \ "description").read[String] and
       (JsPath \ "parentId").read[Long] and
+      (JsPath \ "categoryId").read[Long] and
       (JsPath \ "amount").read[Int]
 
   private val JsonWriterBase = (JsPath \ "location").write[String] and
       (JsPath \ "description").write[String] and
       (JsPath \ "parentId").write[Long] and
       (JsPath \ "creatorId").write[Long] and
+      (JsPath \ "categoryId").write[Long] and
       (JsPath \ "amount").write[Int]
 
   val NewJsonReader =
-    (JsonReaderBase ~ (JsPath \ "creatorId").read[Long]).apply { (loc, desc, pid, am, cid) =>
-      Expense(loc, desc, pid, cid, am)
+    (JsonReaderBase ~ (JsPath \ "creatorId").read[Long]).apply { (loc, desc, pid, ecid, am, cid) =>
+      Expense(loc, desc, pid, cid, ecid, am)
     }
 
   val NewJsonWriter = JsonWriterBase.apply(unlift(Expense.unapply))
@@ -37,7 +39,7 @@ object Expense {
       NewJsonWriter).apply(unlift(InsertedExpense.unapply))
 
   def jsonReaderFromUserId(userId: Long) =
-    JsonReaderBase.apply { (loc, desc, pid, am) =>
-      Expense(loc, desc, pid, userId, am)
+    JsonReaderBase.apply { (loc, desc, pid, ecid, am) =>
+      Expense(loc, desc, pid, userId, ecid, am)
     }
 }

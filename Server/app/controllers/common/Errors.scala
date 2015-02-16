@@ -3,6 +3,7 @@ package controllers.common
 import play.api.libs.json.{JsObject, Json}
 
 trait ErrorType {
+
   protected def msg: String
   protected def errorType: String = getClass.getSimpleName
 
@@ -15,3 +16,8 @@ case class DBError(msg: String) extends ErrorType
 case class JSONError(msg: String) extends ErrorType
 
 case class AuthenticationError(msg: String) extends ErrorType
+
+package object Errors {
+  type ResultWithError[A] = Either[A, ErrorType]
+  val NoJsonError = "No JSON object was provided."
+}

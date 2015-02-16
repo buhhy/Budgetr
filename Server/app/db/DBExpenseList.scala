@@ -2,8 +2,9 @@ package db
 
 import anorm.SqlParser._
 import anorm.{NamedParameter, ~}
-import controllers.common.{DBError, ErrorType}
-import models.{ExpenseList, InsertedExpense, InsertedExpenseList}
+import controllers.common.DBError
+import controllers.common.Errors.ResultWithError
+import models.{ExpenseList, InsertedExpense, InsertedExpenseCategory, InsertedExpenseList}
 import org.joda.time.DateTime
 import play.api.Play.current
 import play.api.db.DB
@@ -11,7 +12,7 @@ import play.api.db.DB
 object DBExpenseList {
   private val TableName = "expense_list"
   private val C_ID = "explist_id"
-  private val C_CID = "creator_id"
+  private val C_CID = "creator_ref_id"
   private val C_Name = "name"
   private val C_Desc = "description"
   private val C_CDate = "create_date"
@@ -45,13 +46,13 @@ object DBExpenseList {
    * [[DBUserExpenseJoin]] instead of manually
    */
 
-  def insert(explist: ExpenseList): Either[InsertedExpenseList, ErrorType] =
+  def insert(explist: ExpenseList): ResultWithError[InsertedExpenseList] =
     insert(None, explist)
 
-  def insert(id: Long, explist: ExpenseList): Either[InsertedExpenseList, ErrorType] =
+  def insert(id: Long, explist: ExpenseList): ResultWithError[InsertedExpenseList] =
     insert(Some(id), explist)
 
-  def insert(id: Option[Long], explist: ExpenseList): Either[InsertedExpenseList, ErrorType] = {
+  def insert(id: Option[Long], explist: ExpenseList): ResultWithError[InsertedExpenseList] = {
     insertHelper.insert(toData(explist) ++ id.map(idColumn), None).fold(
       id => Left(InsertedExpenseList(id._1, id._2, explist)),
       err => Right(err))
@@ -62,7 +63,7 @@ object DBExpenseList {
 
   def delete(id: Long) = helper.delete(Seq(idColumn(id)))
 
-  def find(id: Long): Either[InsertedExpenseList, ErrorType] = {
+  def find(id: Long): ResultWithError[InsertedExpenseList] = {
     DB.withConnection { implicit conn =>
       AnormHelper.runSql {
         anorm.SQL(
@@ -77,7 +78,7 @@ object DBExpenseList {
     }
   }
 
-  def filterLists(userId: Long): Either[Seq[InsertedExpenseList], ErrorType] = {
+  def filterLists(userId: Long): ResultWithError[Seq[InsertedExpenseList]] = {
     val UEJ = DBUserExpenseJoin
     DB.withConnection { implicit conn =>
       AnormHelper.runSql {
@@ -93,7 +94,7 @@ object DBExpenseList {
     }
   }
 
-  def findAssociatedExpenses(id: Long): Either[Seq[InsertedExpense], ErrorType] = {
+  def findAssociatedExpenses(id: Long): ResultWithError[Seq[InsertedExpense]] = {
     DB.withConnection { implicit conn =>
       AnormHelper.runSql {
         Left(anorm.SQL(
@@ -103,6 +104,20 @@ object DBExpenseList {
            """.stripMargin)
             .on(idColumn(id))
             .as(DBExpense.ExpenseParser.*))
+      }
+    }
+  }
+
+  def findAssociatedExpenseCategories(id: Long): ResultWithError[Seq[InsertedExpenseCategory]] = {
+    DB.withConnection { implicit conn =>
+      AnormHelper.runSql {
+        Left(anorm.SQL(
+          s"""
+             |SELECT * FROM ${DBExpenseCategory.TableName}
+             |  WHERE ${DBExpenseCategory.C_ELID} = ${AnormHelper.replaceStr(C_ID)}
+           """.stripMargin)
+            .on(idColumn(id))
+            .as(DBExpenseCategory.ExpenseCategoryParser.*))
       }
     }
   }

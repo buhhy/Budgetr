@@ -11,8 +11,9 @@ object DBExpense {
   private[db] val C_ID = "exp_id"
   private[db] val C_Loc = "location"
   private[db] val C_Desc = "description"
-  private[db] val C_PID = "parent_id"
-  private[db] val C_CID = "creator_id"
+  private[db] val C_PID = "parent_ref_id"
+  private[db] val C_CID = "creator_ref_id"
+  private[db] val C_ECID = "category_ref_id"
   private[db] val C_Amt = "amount"
   private[db] val C_CDate = "create_date"
 
@@ -21,19 +22,19 @@ object DBExpense {
 
   val ExpenseParser =
     (long(C_ID) ~ str(C_Loc) ~ str(C_Desc) ~ long(C_PID) ~
-        long(C_CID) ~ int(C_Amt) ~ date(C_CDate)).map {
-      case id ~ loc ~ desc ~ pid ~ cid ~ amt ~ date =>
-        InsertedExpense(id, new DateTime(date), Expense(loc, desc, pid, cid, amt))
+        long(C_CID) ~ long(C_ECID) ~ int(C_Amt) ~ date(C_CDate)).map {
+      case id ~ loc ~ desc ~ pid ~ cid ~ ecid ~ amt ~ date =>
+        InsertedExpense(id, new DateTime(date), Expense(loc, desc, pid, cid, ecid, amt))
     }
 
-  def toData(exp: Expense): Seq[NamedParameter] = {
+  def toData(exp: Expense): Seq[NamedParameter] =
     Seq(
       C_Loc -> exp.location,
       C_Desc -> exp.desc,
       C_PID -> exp.parentListId,
       C_CID -> exp.creatorId,
+      C_ECID -> exp.categoryId,
       C_Amt -> exp.amount)
-  }
 
   def toData(exp: InsertedExpense): Seq[NamedParameter] =
     toData(exp.expense) ++ Seq[NamedParameter](idColumn(exp.expId), C_CDate -> exp.createDate)
