@@ -28,12 +28,19 @@ object Expense {
       (JsPath \ "categoryId").write[Long] and
       (JsPath \ "amount").write[Int]
 
+  /**
+   * Default JSON reader for a new Expense object with no ID or create date.
+   */
   val NewJsonReader =
     (JsonReaderBase ~ (JsPath \ "creatorId").read[Long]).apply { (loc, desc, pid, ecid, am, cid) =>
       Expense(loc, desc, pid, cid, ecid, am)
     }
 
   val NewJsonWriter = JsonWriterBase.apply(unlift(Expense.unapply))
+
+  /**
+   * JSON writer for an Expense object that has an ID and create date.
+   */
   val InsertedJsonWriter = ((JsPath \ "expenseId").write[Long] and
       (JsPath \ "createDate").write[DateTime] and
       NewJsonWriter).apply(unlift(InsertedExpense.unapply))

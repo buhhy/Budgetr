@@ -1,5 +1,5 @@
-import db.{DBExpenseCategory, DBUserExpenseJoin, DBExpenseList, DBUser}
-import models.{ExpenseCategory, UserExpenseJoin, ExpenseList, User}
+import db.{DBExpenseCategory, DBUserExpenseListJoin, DBExpenseList, DBUser}
+import models.{ExpenseCategory, UserExpenseListJoin, ExpenseList, User}
 import org.joda.time.DateTimeZone
 import play.api.{Application, GlobalSettings, Logger}
 
@@ -63,7 +63,7 @@ object Global extends GlobalSettings {
       case Left(x) =>
         Logger.info("Added expense list.")
         DefaultUsers.map { u =>
-          val uej = DBUserExpenseJoin.insert(UserExpenseJoin(u._1, DefaultExpenseList._1)) match {
+          val uej = DBUserExpenseListJoin.insert(UserExpenseListJoin(u._1, DefaultExpenseList._1)) match {
             case Left(_) => 1
             case Right(error) =>
               Logger.error(error.message)

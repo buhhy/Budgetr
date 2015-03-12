@@ -43,7 +43,7 @@ object DBExpenseList {
 
   /**
    * TODO(tlei): when adding new lists, the creator should be automatically added to the
-   * [[DBUserExpenseJoin]] instead of manually
+   * [[DBUserExpenseListJoin]] instead of manually
    */
 
   def insert(explist: ExpenseList): ResultWithError[InsertedExpenseList] =
@@ -79,7 +79,7 @@ object DBExpenseList {
   }
 
   def filterLists(userId: Long): ResultWithError[Seq[InsertedExpenseList]] = {
-    val UEJ = DBUserExpenseJoin
+    val UEJ = DBUserExpenseListJoin
     DB.withConnection { implicit conn =>
       AnormHelper.runSql {
         Left(anorm.SQL(

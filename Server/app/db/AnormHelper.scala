@@ -63,6 +63,10 @@ class AnormInsertHelper[ResultType](
       }.fold(id => Left(id, createDate), Right(_))
     }
   }
+
+  def insertAll(
+      insertValues: Seq[Seq[NamedParameter]],
+      )
 }
 
 class AnormHelper(val tableName: String) {

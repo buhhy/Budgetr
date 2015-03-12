@@ -2,7 +2,7 @@ package controllers
 
 import controllers.common.Errors.NoJsonError
 import controllers.security.AuthenticationConfig
-import db.{DBExpenseList, DBUserExpenseJoin}
+import db.{DBExpenseList, DBUserExpenseListJoin}
 import jp.t2v.lab.play2.auth.{AuthElement, LoginLogout}
 import models._
 import play.api.libs.json.Json
@@ -26,7 +26,7 @@ object ExpenseListController extends Controller with LoginLogout
         DBExpenseList.insert(newList) match {
           case Left(insertedList) =>
             // Also add the creator to the expense list memberships list.
-            DBUserExpenseJoin.insert(UserExpenseJoin(userId, insertedList.expListId)) match {
+            DBUserExpenseListJoin.insert(UserExpenseListJoin(userId, insertedList.expListId)) match {
               case Left(insertedJoin) =>
                 Ok(Json.toJson(insertedList))
               case Right(error) =>
@@ -75,7 +75,7 @@ object ExpenseListController extends Controller with LoginLogout
 
   def addUserToExpenseList(eid: Long, uid: Long) =
     StackAction(AuthorityKey -> NormalUser) { implicit request =>
-      DBUserExpenseJoin.insert(UserExpenseJoin(uid, eid)) match {
+      DBUserExpenseListJoin.insert(UserExpenseListJoin(uid, eid)) match {
         case Left(insertedJoin) =>
           Ok(Json.obj())
         case Right(error) =>
