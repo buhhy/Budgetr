@@ -1,28 +1,49 @@
-// Screens 
-var expenseLogEl = document.getElementById("expenseLog");
-var expenseFormEl = document.getElementById("newExpenseForm");
+// Screens
+var expenseLogEl = $("#expenseLog");
+var expenseFormEl = $("#newExpenseForm");
 
 // Buttons
-var newExpBtn = document.getElementById("newExpBtn");
-var cancelBtn = document.getElementById("cancelBtn");
-var saveBtn = document.getElementById("saveExpBtn");
-var notifBtn = document.getElementById("notif");
+var newExpBtn = $("#newExpBtn");
+var cancelBtn = $("#cancelBtn");
+var saveBtn = $("#saveExpBtn");
+var notifBtn = $("#notif");
 
 // Question block elements
-var busQ = document.getElementById("busQ");
-var catQ = document.getElementById("catQ");
-var costQ = document.getElementById("costQ");
-var itemsQ = document.getElementById("itemsQ");
+var busQ = $("#busQ");
+var catQ = $("#catQ");
+var costQ = $("#costQ");
+var itemsQ = $("#itemsQ");
 
 //Input elements
-var busNameInputEl = document.getElementById("busNameInput");
-var catInputEl = document.getElementById("catInput");
-var costInputEl = document.getElementById("costInput");
-var itemsInputEl = document.getElementById("itemsInput");
+var busNameInputEl = $("#busNameInput");
+var catInputEl = $("#catInput");
+var costInputEl = $("#costInput");
+var itemsInputEl = $("#itemsInput");
 
 // Other DOM elements
-var itemListEl = document.getElementById("itemList");
-var expenseLogDate = document.getElementById("expenseLogDate");
+var itemListEl = $("#itemList");
+var expenseLogDate = $("#expenseLogDate");
+
+// Dashboard
+$(document).ready(function () {
+
+	$.get("/api/expenselist/1", function(data) {
+		var activeDate;
+		for (var i = data.expenses.length-1; i >= 0; i--) {
+			var currentExpense = data.expenses[i];
+			var currentConvertedDate = convertTime(currentExpense.createDate);
+			if (currentConvertedDate !== activeDate) {
+				var activeDate = convertTime(currentExpense.createDate);
+				var newDay = $("<div class='day-log'></div>");
+				createNewDay(activeDate, newDay);
+			}
+			var busName = currentExpense.location;
+			var items = currentExpense.description;
+			var amount = parseFloat(currentExpense.amount/100).toFixed(2);
+			createExpense(newDay, busName, items, amount);
+		}
+	});
+});
 
 // Expense class
 var Expense = function() {
@@ -37,113 +58,143 @@ var Expense = function() {
 var newExpense = undefined;
 
 // On-click events
+$(newExpBtn).click(
+	function() {
+		$(expenseLogEl).addClass('hidden');
+		$(expenseFormEl).removeClass('hidden');
+		newExpense = new Expense();
+		$("#prog1").addClass('current-prog');
+		$(busNameInputEl).focus();
+	}
+);
+
 newExpBtn.onclick = function() {
-	expenseLogEl.classList.add('hidden');
-	expenseFormEl.classList.remove('hidden');
+	$(expenseLogEl).addClass('hidden');
+	$(expenseFormEl).removeClass('hidden');
 	newExpense = new Expense();
-	document.getElementById("prog1").classList.add('current-prog');
-	busNameInputEl.focus();
+	$("#prog1").addClass('current-prog');
+	$(busNameInputEl).focus();
 }
 
 cancelBtn.onclick = function() {
 	var input = confirm("Your changes will not be saved. Continue?");
 	if (input == true) {
-		expenseLogEl.classList.remove('hidden');
-		expenseFormEl.classList.add('hidden');
+		$(expenseLogEl).removeClass('hidden');
+		$(expenseFormEl).addClass('hidden');
 		resetExpenseForm();
 	}
 }
 
 saveBtn.onclick = function() {
-	console.log("newExpense.busName");
-	console.log("newExpense.category");
-	console.log("newExpense.cost");
-	console.log("newExpense.items");
+	expensePOST();
 	resetExpenseForm();
 }
 
 notifBtn.onclick = function() {
-	notifBtn.classList.add('hidden');
+	$(notifBtn).addClass('hidden');
 } 
 // Functions for submitting data
 function submitBusName(event) {
 	if (event.keyCode === 13) {
-		newExpense.busName = busNameInputEl.value; 
+		newExpense.busName = $(busNameInputEl).val(); 
 		console.log(newExpense.busName);
-		busQ.classList.add('hidden');
-		catQ.classList.remove('hidden');
-		document.getElementById("prog2").classList.add('current-prog');
-		catInputEl.focus();
+		$(busQ).addClass('hidden');
+		$(catQ).removeClass('hidden');
+		$("#prog2").addClass('current-prog');
+		$(catInputEl).focus();
 	}
 }
 
 function submitCat(event) {
 	if (event.keyCode === 13) {
-		newExpense.category = catInputEl.value; 
+		newExpense.category = $(catInputEl).val(); 
 		console.log(newExpense.category);
-		catQ.classList.add('hidden');
-		costQ.classList.remove('hidden');
-		document.getElementById("prog3").classList.add('current-prog');
-		costInputEl.focus();
+		$(catQ).addClass('hidden');
+		$(costQ).removeClass('hidden');
+		$("#prog3").addClass('current-prog');
+		$(costInputEl).focus();
 	}
 }
 
 function submitCost(event) {
 	if (event.keyCode === 13) {
-		newExpense.cost = costInputEl.value; 
+		newExpense.cost = Number.parseInt($(costInputEl).val())*100; 
 		console.log(newExpense.cost);
-		costQ.classList.add('hidden');
-		itemsQ.classList.remove('hidden');
-		document.getElementById("prog4").classList.add('current-prog');
-		itemsInputEl.focus();
+		$(costQ).addClass('hidden');
+		$(itemsQ).removeClass('hidden');
+		$("#prog4").addClass('current-prog');
+		$(itemsInputEl).focus();
 	}
 }
 
 function submitItems(event) {
 	if (event.keyCode === 13) {
-		newExpense.items = itemsInputEl.value;
-		newListItem(newExpense.items);
+		newExpense.items.push($(itemsInputEl).val());
+		updateList($(itemsInputEl).val());
 	}
 }
 
-// Creates a new list item
-function newListItem(items) {
-	var newLi = document.createElement("li");
-	var newSpan = document.createElement("span");
-	newSpan.innerHTML = items;
-	newLi.appendChild(newSpan);
-	itemsInputEl.value="";
-	var existingListItems = itemListEl.getElementsByTagName("li");
-	if (existingListItems.length = 0) {
-		itemListEl.appendChild(newLi);
-	} else {
-		itemListEl.insertBefore(newLi, existingListItems[0]);
-	}
-}
-
-// Checks the time
-
-
-// Creates an expense log date
-function newExpenseLogDate() {
-	var currentTime = new Date();
-	var options = { weekday: 'long', month: 'long', day: 'numeric', timeZone: 'America/Los_Angeles' }
-	currentTime = currentTime.toLocaleDateString('en-US', options);
-	
-	function checkTime() {
-		var lastDayLog = expenseLogDate.getElementsByTagName("h2")[0].innerHTML;
-		if (lastDayLog == currentTime) {
-			console.log("the same!");
-		} else {
-			console.log("not the same!");
-			var newDateHeading = document.createElement("h2").classList.add('date-heading');
-			//newDateHeading.innerHTML = currentTime;
+function expensePOST() {
+	var itemDescription = "";
+	for (var j = 0; j < newExpense.items.length; j++) {
+		itemDescription += newExpense.items[j];
+		if (j==newExpense.items[j]<1) {
+			itemDescription += ", ";
 		}
 	}
-	checkTime();
+
+	var expenseData = {
+	  "value": {
+	    "location": newExpense.busName,
+	    "description": newExpense.items,
+	    "amount": newExpense.cost,
+	    "parentId": 1
+	  }
+	}
+
+	$.ajax({
+		type: "post",
+		url: "/api/expense",
+		data: JSON.stringify(expenseData),
+		"contentType": "application/json"
+	});
 }
 
-newExpenseLogDate();
+// Creates a new date heading
+function createNewDay(activeDate, newDay) {
+	var newDateHeading = $("<h2 class='date-heading'>"+activeDate+"</h2>");
+	$(expenseLogEl).append(newDay);
+	$(newDay).append(newDateHeading);
+}
+
+// Fills out each expense 
+function createExpense(newDay, busName, items, amount) {
+	var expenseUl = $("<ul class='expense-list'></ul>");
+	var expenseLi = $("<li class='expense'></li>");
+	var expenseBusName = $("<div class='bus-name'><span>"+busName+"</span></div>");
+	var expenseItems = $("<div class='items'>"+items+"</div>");
+	var expenseCost = $("<div class='cost'>"+amount+"</div>");
+	$(newDay).append(expenseUl);
+	$(expenseUl).append(expenseLi);
+	$(expenseLi).append(expenseBusName);
+	$(expenseLi).append(expenseItems);
+	$(expenseLi).append(expenseCost);
+}
+
+// Item list 
+function updateList(item) {
+	var newLi = $("<li>"+item+"</li>");
+	$("#itemList").append(newLi);
+	console.log("mar");
+	$("#itemsInput").val('');
+}
+
+// Converts time
+function convertTime(epochTime) {
+	var convertedTime = new Date(epochTime)
+	var options = { weekday: 'long', month: 'long', day: 'numeric', timeZone: 'America/Los_Angeles' }
+	return convertedTime.toLocaleDateString('en-US', options);
+}
 
 // Event Listeners
 busNameInput.addEventListener("keypress", submitBusName)
@@ -161,10 +212,9 @@ function resetExpenseForm() {
 	itemsQ.classList.add('hidden');
 	busQ.classList.remove('hidden');
 	expenseFormEl.classList.add('hidden');
-	expenseLogEl.classList.remove('hidden');	
+	$(expenseLogEl).removeClass('hidden');	
 	document.getElementById("prog1").classList.remove('current-prog');
 	document.getElementById("prog2").classList.remove('current-prog');
 	document.getElementById("prog3").classList.remove('current-prog');
 	document.getElementById("prog4").classList.remove('current-prog');
 }
-
