@@ -1,54 +1,52 @@
 package controllers
 
 import controllers.security.AuthenticationConfig
-import db.{DBUserExpenseJoin, DBUserExpenseListJoin, DBExpense}
+import db.{DBUserExpenseJoin, DBExpense}
 import jp.t2v.lab.play2.auth.{AuthElement, LoginLogout}
-import models.{UserExpenseJoin, UserExpenseListJoin, Expense, NormalUser}
+import models.{UserExpenseJoin, Expense, NormalUser}
 import play.api.libs.json.Json
 import play.api.mvc.Controller
+import controllers.common.ControllerHelper
 
 object ExpenseController extends Controller with LoginLogout
     with AuthElement with AuthenticationConfig {
 
-  implicit val ejw = Expense.NewJsonWriter
-  implicit val iejw = Expense.InsertedJsonWriter
-
   def newExpense = StackAction(AuthorityKey -> NormalUser) { implicit request =>
-    implicit val ejr = Expense.jsonReaderFromUserId(loggedIn.userId)
-    implicit val uejjr = UserExpenseJoin.JsonReader
+    implicit val expenseJR = Expense.jsonReaderSetUserId(loggedIn.userId)
 
-    request.body.asJson match {
-      case Some(json) =>
-        val value = json \ "value"
-        val newList = value.as[Expense]
-        val participants = (value \ "participants").as[Seq[UserExpenseJoin]]
+    ControllerHelper.withJsonRequest { json =>
+      val newList = json.as[Expense]
 
-        DBExpense.insert(newList) match {
-          case Left(result) =>
-            DBUserExpenseJoin.insert()
-            Ok(Json.toJson(result))
-          case Right(error) =>
-            BadRequest(error.toJson)
-        }
-      case None =>
-        BadRequest("")
+      DBExpense.insert(newList) match {
+        case Left(result) =>
+          implicit val userExpenseJR = UserExpenseJoin.jsonReaderSetExpenseId(result.expId)
+          val participants = (json \ Expense.JSON_PARTICIPANTS).as[Seq[UserExpenseJoin]]
+
+          DBUserExpenseJoin.insertAll(participants) match {
+            case Left(parts) =>
+              implicit val insertedExpenseJW = Expense.insertedFullJsonWriter(parts)
+              Ok(Json.toJson(result))
+            case Right(error) =>
+              BadRequest(error.toJson)
+          }
+        case Right(error) =>
+          BadRequest(error.toJson)
+      }
     }
   }
 
   def editExpense(eid: Long) = StackAction(AuthorityKey -> NormalUser) { implicit request =>
-    implicit val jr = Expense.NewJsonReader
+    implicit val expenseJR = Expense.NewJsonReader
+    implicit val insertedExpenseJW = Expense.InsertedJsonWriter
 
-    request.body.asJson match {
-      case Some(json) =>
-        val updatedList = (json \ "value").as[Expense]
-        DBExpense.update(eid, updatedList) match {
-          case Left(result) =>
-            Ok(Json.toJson(result))
-          case Right(error) =>
-            BadRequest(error.toJson)
-        }
-      case None =>
-        BadRequest("")
+    ControllerHelper.withJsonRequest { json =>
+      val updatedList = json.as[Expense]
+      DBExpense.update(eid, updatedList) match {
+        case Left(result) =>
+          Ok(Json.toJson(result))
+        case Right(error) =>
+          BadRequest(error.toJson)
+      }
     }
   }
 }

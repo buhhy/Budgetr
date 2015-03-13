@@ -5,6 +5,7 @@ import anorm.{NamedParameter, ~}
 import controllers.common.ErrorType
 import models.{ExpenseCategory, InsertedExpenseCategory}
 import org.joda.time.DateTime
+import db.common.{AnormInsertHelper, AnormHelper}
 
 object DBExpenseCategory {
   private[db] val TableName = "expense_category"

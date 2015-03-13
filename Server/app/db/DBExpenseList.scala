@@ -8,6 +8,7 @@ import models.{ExpenseList, InsertedExpense, InsertedExpenseCategory, InsertedEx
 import org.joda.time.DateTime
 import play.api.Play.current
 import play.api.db.DB
+import db.common.{AnormInsertHelper, AnormHelper}
 
 object DBExpenseList {
   private val TableName = "expense_list"

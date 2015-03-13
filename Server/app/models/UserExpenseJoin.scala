@@ -14,16 +14,26 @@ case class UserExpenseJoin(
 case class InsertedUserExpenseJoin(createDate: DateTime, join: UserExpenseJoin)
 
 object UserExpenseJoin {
-  val JsonReader = ((JsPath \ "userId").read[Long] and
-      (JsPath \ "expenseId").read[Long] and
-      (JsPath \ "paidAmount").read[Double] and
-      (JsPath \ "responsibleAmount").read[Double]).apply(UserExpenseJoin)
+  val JSON_USER_ID = "userId"
+  val JSON_EXPENSE_ID = "expenseId"
+  val JSON_PAID_AMOUNT = "paidAmount"
+  val JSON_RESPONSIBLE_AMOUNT = "responsibleAmount"
 
-  val JsonWriter = ((JsPath \ "userId").write[Long] and
-      (JsPath \ "expenseId").write[Long] and
-      (JsPath \ "paidAmount").write[Double] and
-      (JsPath \ "responsibleAmount").write[Double]).apply(unlift(UserExpenseJoin.unapply))
+  val JsonReader = ((JsPath \ JSON_USER_ID).read[Long] and
+      (JsPath \ JSON_EXPENSE_ID).read[Long] and
+      (JsPath \ JSON_PAID_AMOUNT).read[Double] and
+      (JsPath \ JSON_RESPONSIBLE_AMOUNT).read[Double]).apply(UserExpenseJoin.apply _)
+
+  val JsonWriter = ((JsPath \ JSON_USER_ID).write[Long] and
+      (JsPath \ JSON_EXPENSE_ID).write[Long] and
+      (JsPath \ JSON_PAID_AMOUNT).write[Double] and
+      (JsPath \ JSON_RESPONSIBLE_AMOUNT).write[Double]).apply(unlift(UserExpenseJoin.unapply))
 
   val InsertedJsonWriter = ((JsPath \ "createDate").write[DateTime] and JsonWriter)
       .apply(unlift(InsertedUserExpenseJoin.unapply))
+
+  def jsonReaderSetExpenseId(expenseId: Long) = ((JsPath \ JSON_USER_ID).read[Long] and
+      (JsPath \ JSON_PAID_AMOUNT).read[Double] and
+      (JsPath \ JSON_RESPONSIBLE_AMOUNT).read[Double])
+      .apply { (uid, pamt, ramt) => UserExpenseJoin(uid, expenseId, pamt, ramt) }
 }

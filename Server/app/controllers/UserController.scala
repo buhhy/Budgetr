@@ -6,23 +6,21 @@ import jp.t2v.lab.play2.auth.AuthElement
 import models.User
 import play.api.libs.json.Json
 import play.api.mvc.{Action, Controller}
+import controllers.common.ControllerHelper
 
 object UserController extends Controller with AuthElement with AuthenticationConfig {
   implicit val jw = User.InsertedJsonWriter
   implicit val jr = User.JsonReader
 
   def newUser = Action { implicit request =>
-    request.body.asJson match {
-      case Some(json) =>
-        val newUser = (json \ "value").as[models.User]
-        DBUser.insert(newUser) match {
-          case Left(result) =>
-            Ok(Json.toJson(result))
-          case Right(error) =>
-            BadRequest(error.toJson)
-        }
-      case None =>
-        BadRequest("")
+    ControllerHelper.withJsonRequest { json =>
+      val newUser = json.as[models.User]
+      DBUser.insert(newUser) match {
+        case Left(result) =>
+          Ok(Json.toJson(result))
+        case Right(error) =>
+          BadRequest(error.toJson)
+      }
     }
   }
 

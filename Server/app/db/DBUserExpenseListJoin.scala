@@ -3,6 +3,7 @@ package db
 import anorm.NamedParameter
 import controllers.common.ErrorType
 import models.{InsertedUserExpenseListJoin, UserExpenseListJoin}
+import db.common.{AnormInsertHelper, AnormHelper}
 
 object DBUserExpenseListJoin {
   private[db] val TableName = "user_expense_list_join"

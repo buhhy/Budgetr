@@ -8,6 +8,7 @@ import models.{InsertedUser, User}
 import org.joda.time.DateTime
 import play.api.Play.current
 import play.api.db.DB
+import db.common.{AnormInsertHelper, AnormHelper}
 
 object DBUser {
   private val TableName = "user"

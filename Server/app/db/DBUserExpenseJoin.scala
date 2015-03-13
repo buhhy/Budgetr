@@ -3,6 +3,7 @@ package db
 import anorm.NamedParameter
 import controllers.common.ErrorType
 import models.{InsertedUserExpenseJoin, UserExpenseJoin}
+import db.common.{AnormInsertHelper, AnormHelper}
 
 object DBUserExpenseJoin {
   private[db] val TableName = "user_expense_join"
@@ -31,9 +32,13 @@ object DBUserExpenseJoin {
         .fold(ret => Left(InsertedUserExpenseJoin(ret._2, uej)), err => Right(err))
   }
 
-  def insertAll(uejs: Seq[UserExpenseJoin]): Either[InsertedUserExpenseJoin, ErrorType] = {
-    insertHelper.insert(toData(uej), None)
-        .fold(ret => Left(InsertedUserExpenseJoin(ret._2, uej)), err => Right(err))
+  def insertAll(uejs: Seq[UserExpenseJoin]): Either[Seq[InsertedUserExpenseJoin], ErrorType] = {
+    insertHelper.insertAll(uejs.map(toData), None)
+        .fold(rets => {
+          Left(rets.zip(uejs).map { case ((_, date), uej) =>
+            InsertedUserExpenseJoin(date, uej)
+          })
+        }, err => Right(err))
   }
 
   def update(uej: UserExpenseJoin) = helper.update(toData(uej), idColumns(uej))

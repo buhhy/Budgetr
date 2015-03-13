@@ -1,7 +1,7 @@
-package db
+package db.common
 
 import anorm.{ResultSetParser, SqlParser, NamedParameter, SQL}
-import controllers.common.{ErrorType, DBError}
+import controllers.common.{MultiError, ErrorType, DBError}
 import org.joda.time.DateTime
 import play.api.Logger
 import play.api.db.DB
@@ -66,7 +66,44 @@ class AnormInsertHelper[ResultType](
 
   def insertAll(
       insertValues: Seq[Seq[NamedParameter]],
-      )
+      createDateOpt: Option[DateTime] = None): Either[Seq[(ResultType, DateTime)], ErrorType] = {
+
+    // TODO(tlei): use batch inserting instead of multiple single inserts
+    val (insertedIds, errors) = insertValues.map(insert(_, createDateOpt))
+        .foldLeft(Seq[(ResultType, DateTime)](), Seq[ErrorType]()) { case ((ids, errs), cur) =>
+          cur.fold(l => (ids :+ l, errs), r => (ids, errs :+ r))
+        }
+
+    if (insertedIds.isEmpty)
+      Left(insertedIds)
+    else
+      Right(MultiError(errors))
+//    val createDate = createDateOpt.getOrElse(new DateTime())
+//
+//    // Remove the create date key in each of the insert sets, and append the index of the set to the
+//    // named parameter key value so we can use a prepared statement with unique keys.
+//    val newInsertValues = insertValues.zipWithIndex.map { case (ivs, index) =>
+//      ivs.map { iv =>
+//        if (iv.name.equals(createDateColumn))
+//          NamedParameter(s"${createDateColumn}_$index", createDate)
+//        else
+//          NamedParameter(s"${iv.name}_$index", iv.value)
+//      }
+//    }.flatten
+//
+//
+//    val allColumnNames = newInsertValues.map(_.name).mkString(", ")
+//    val allColumnValues = newInsertValues.map(_.name).map(AnormHelper.replaceStr).mkString(", ")
+//
+//    DB.withConnection { implicit conn =>
+//      AnormHelper.runSql {
+//        Left(SQL(
+//          s"""
+//            |INSERT INTO $tableName($allColumnNames)
+//            |VALUES($allColumnValues);
+//          """.stripMargin).on(newInsertValues: _*).executeInsert(idColumnParser))
+//      }.fold(id => Left(id, createDate), Right(_))
+  }
 }
 
 class AnormHelper(val tableName: String) {

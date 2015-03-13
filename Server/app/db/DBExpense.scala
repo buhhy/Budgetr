@@ -5,6 +5,7 @@ import anorm.{NamedParameter, ~}
 import controllers.common.ErrorType
 import models.{InsertedExpense, Expense}
 import org.joda.time.DateTime
+import db.common.{AnormInsertHelper, AnormHelper}
 
 object DBExpense {
   private[db] val TableName = "expense"
@@ -32,7 +33,7 @@ object DBExpense {
       C_Loc -> exp.location,
       C_Desc -> exp.desc,
       C_PID -> exp.parentListId,
-      C_CID -> exp.creatorId,
+      C_CID -> exp.creatorUserId,
       C_ECID -> exp.categoryId,
       C_Amt -> exp.amount)
 
