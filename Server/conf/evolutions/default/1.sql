@@ -26,6 +26,16 @@ CREATE TABLE user_expense_list_join(
   FOREIGN KEY (explist_ref_id) REFERENCES expense_list(explist_id) ON DELETE CASCADE
 );
 
+CREATE TABLE expense_category(
+  expcat_id BIGINT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+  cat_name VARCHAR(128) NOT NULL,
+  create_date DATETIME NOT NULL,
+  creator_ref_id BIGINT NOT NULL,
+  explist_ref_id BIGINT NOT NULL,
+  FOREIGN KEY (creator_ref_id) REFERENCES user(user_id) ON DELETE CASCADE,
+  FOREIGN KEY (explist_ref_id) REFERENCES expense_list(explist_id) ON DELETE CASCADE
+);
+
 CREATE TABLE expense(
   exp_id BIGINT PRIMARY KEY NOT NULL AUTO_INCREMENT,
   location VARCHAR(1024) NOT NULL,
@@ -37,7 +47,7 @@ CREATE TABLE expense(
   create_date DATETIME NOT NULL,
   FOREIGN KEY (creator_ref_id) REFERENCES user(user_id) ON DELETE CASCADE,
   FOREIGN KEY (parent_ref_id) REFERENCES expense_list(explist_id) ON DELETE CASCADE,
-  FOREIGN KEY (category_ref_id) REFERENCES expense_list(explist_id)
+  FOREIGN KEY (category_ref_id) REFERENCES expense_category(expcat_id)
 );
 
 CREATE TABLE user_expense_join(
@@ -49,16 +59,6 @@ CREATE TABLE user_expense_join(
   PRIMARY KEY (user_ref_id, exp_ref_id),
   FOREIGN KEY (user_ref_id) REFERENCES user(user_id) ON DELETE CASCADE,
   FOREIGN KEY (exp_ref_id) REFERENCES expense(exp_id) ON DELETE CASCADE
-);
-
-CREATE TABLE expense_category(
-  expcat_id BIGINT PRIMARY KEY NOT NULL AUTO_INCREMENT,
-  cat_name VARCHAR(128) NOT NULL,
-  create_date DATETIME NOT NULL,
-  creator_ref_id BIGINT NOT NULL,
-  explist_ref_id BIGINT NOT NULL,
-  FOREIGN KEY (creator_ref_id) REFERENCES user(user_id) ON DELETE CASCADE,
-  FOREIGN KEY (explist_ref_id) REFERENCES expense_list(explist_id) ON DELETE CASCADE
 );
 
 # CREATE TABLE expense_category_join(
@@ -73,9 +73,11 @@ CREATE TABLE expense_category(
 # --- !Downs
 
 # DROP TABLE expense_category_join;
-DROP TABLE expense_category;
+SET FOREIGN_KEY_CHECKS=0;
 DROP TABLE user_expense_join;
 DROP TABLE expense;
+DROP TABLE expense_category;
 DROP TABLE user_expense_list_join;
 DROP TABLE expense_list;
 DROP TABLE user;
+SET FOREIGN_KEY_CHECKS=1;

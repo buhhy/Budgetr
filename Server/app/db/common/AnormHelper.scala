@@ -74,7 +74,7 @@ class AnormInsertHelper[ResultType](
           cur.fold(l => (ids :+ l, errs), r => (ids, errs :+ r))
         }
 
-    if (insertedIds.isEmpty)
+    if (insertedIds.isEmpty || errors.isEmpty)
       Left(insertedIds)
     else
       Right(MultiError(errors))
@@ -133,9 +133,21 @@ class AnormHelper(val tableName: String) {
       AnormHelper.runSql {
         Left(SQL(
           s"""
-            DELETE FROM $tableName WHERE $idColumns
-          """
+            |DELETE FROM $tableName WHERE $idColumns
+          """.stripMargin
         ).on(conditions: _*).executeUpdate())
+      }
+    }
+  }
+
+  def truncate(): Either[Int, ErrorType] = {
+    DB.withConnection { implicit conn =>
+      AnormHelper.runSql {
+        Left(SQL(
+          s"""
+             |DELETE FROM $tableName
+           """.stripMargin
+        ).executeUpdate())
       }
     }
   }

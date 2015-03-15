@@ -44,4 +44,5 @@ object DBUserExpenseJoin {
   def update(uej: UserExpenseJoin) = helper.update(toData(uej), idColumns(uej))
 
   def delete(uej: UserExpenseJoin) = helper.delete(idColumns(uej))
+  def truncate = helper.truncate()
 }

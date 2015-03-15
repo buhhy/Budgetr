@@ -49,4 +49,5 @@ object DBExpenseCategory {
   def update(id: Long, expCat: ExpenseCategory) =
     helper.update(toData(expCat), Seq(idColumn(id)))
   def delete(id: Long) = helper.delete(Seq(idColumn(id)))
+  def truncate = helper.truncate
 }

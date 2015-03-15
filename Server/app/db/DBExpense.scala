@@ -43,8 +43,14 @@ object DBExpense {
   def idColumn(id: Long): NamedParameter = NamedParameter(C_ID, id)
 
 
-  def insert(exp: Expense): Either[InsertedExpense, ErrorType] = {
-    insertHelper.insert(toData(exp), None).fold(
+  def insert(exp: Expense): Either[InsertedExpense, ErrorType] = insert(exp, None)
+  def insert(exp: Expense, createDate: DateTime): Either[InsertedExpense, ErrorType] =
+    insert(exp, Some(createDate))
+
+  private def insert(
+      exp: Expense, createDate: Option[DateTime]): Either[InsertedExpense, ErrorType] = {
+
+    insertHelper.insert(toData(exp), createDate).fold(
       id => Left(InsertedExpense(id._1, id._2, exp)),
       err => Right(err))
   }
@@ -52,4 +58,5 @@ object DBExpense {
   def update(id: Long, exp: Expense) =
     helper.update(toData(exp), Seq(idColumn(id)))
   def delete(id: Long) = helper.delete(Seq(idColumn(id)))
+  def truncate = helper.truncate
 }

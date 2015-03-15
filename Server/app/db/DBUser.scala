@@ -58,6 +58,7 @@ object DBUser {
   def update(id: Long, user: User) = helper.update(toData(user), Seq(idColumn(id)))
 
   def delete(id: Long) = helper.delete(Seq(idColumn(id)))
+  def truncate = helper.truncate
 
   def find(id: Long): Either[InsertedUser, ErrorType] = {
     DB.withConnection { implicit conn =>

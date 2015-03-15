@@ -63,6 +63,7 @@ object DBExpenseList {
     helper.update(toData(explist), Seq(idColumn(id)))
 
   def delete(id: Long) = helper.delete(Seq(idColumn(id)))
+  def truncate = helper.truncate
 
   def find(id: Long): ResultWithError[InsertedExpenseList] = {
     DB.withConnection { implicit conn =>
