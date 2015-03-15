@@ -3,9 +3,11 @@ package db
 import anorm.SqlParser._
 import anorm.{NamedParameter, ~}
 import controllers.common.ErrorType
+import db.common.{AnormHelper, AnormInsertHelper}
 import models.{ExpenseCategory, InsertedExpenseCategory}
 import org.joda.time.DateTime
-import db.common.{AnormInsertHelper, AnormHelper}
+import play.api.Play.current
+import play.api.db.DB
 
 object DBExpenseCategory {
   private[db] val TableName = "expense_category"
@@ -31,6 +33,23 @@ object DBExpenseCategory {
       C_Name -> expCat.name,
       C_CID -> expCat.creatorId,
       C_ELID -> expCat.parentListId)
+
+  def find(name: String, parentListId: Long): Either[Option[InsertedExpenseCategory], ErrorType] = {
+    DB.withConnection { implicit conn =>
+      AnormHelper.runSql {
+        anorm.SQL(
+          s"""
+             |SELECT * FROM $TableName
+             |  WHERE $C_ELID = ${AnormHelper.replaceStr(C_ELID)}
+             |    AND $C_Name = ${AnormHelper.replaceStr(C_Name)}
+           """.stripMargin)
+            .on(C_ELID -> parentListId, C_Name -> name)
+            .as(ExpenseCategoryParser.singleOpt)
+            .map(e => Left(Some(e)))
+            .getOrElse(Left(None))
+      }
+    }
+  }
 
   def insert(expCat: ExpenseCategory): Either[InsertedExpenseCategory, ErrorType] =
     insert(None, expCat)

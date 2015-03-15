@@ -66,9 +66,11 @@ object DBUser {
         anorm.SQL(
           s"""
               |SELECT * FROM $TableName WHERE $C_ID = ${AnormHelper.replaceStr(C_ID)}
-            """.stripMargin)
-            .on(idColumn(id)).as(UserParser.singleOpt)
-            .map(Left(_)).getOrElse(Right(DBError(s"Could not find user with id `$id`.")))
+           """.stripMargin)
+            .on(idColumn(id))
+            .as(UserParser.singleOpt)
+            .map(Left(_))
+            .getOrElse(Right(DBError(s"Could not find user with id `$id`.")))
       }
     }
   }
