@@ -60,7 +60,7 @@ object DBUser {
   def delete(id: Long) = helper.delete(Seq(idColumn(id)))
   def truncate = helper.truncate
 
-  def find(id: Long): Either[InsertedUser, ErrorType] = {
+  def find(id: Long): Either[Option[InsertedUser], ErrorType] = {
     DB.withConnection { implicit conn =>
       AnormHelper.runSql {
         anorm.SQL(
@@ -69,8 +69,8 @@ object DBUser {
            """.stripMargin)
             .on(idColumn(id))
             .as(UserParser.singleOpt)
-            .map(Left(_))
-            .getOrElse(Right(DBError(s"Could not find user with id `$id`.")))
+            .map(x => Left(Some(x)))
+            .getOrElse(Left(None))
       }
     }
   }

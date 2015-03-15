@@ -50,7 +50,7 @@ trait AuthenticationConfig extends AuthConfig {
    * You can alter the procedure to suit your application.
    */
   def resolveUser(id: Id)(implicit ctx: ExecutionContext): Future[Option[User]] =
-    Future(DBUser.find(id).fold(Some(_), _ => None))
+    Future(DBUser.find(id).fold(identity, _ => None))
 
   /**
    * Where to redirect the user after a successful login.
