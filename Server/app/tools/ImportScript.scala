@@ -11,8 +11,9 @@ import org.joda.time.{DateTimeZone, DateTime}
  * This Scala script is used to import the UWBC Excel spreadsheet. To run this script:
  *    - Run the Play console: activator
  *    - Open the Scala console within play: console
- *    - Execute this line: ':paste -raw app/tools/BadmintonClubCSVImporter.scala'
- *    - Run the script: 'ImportScript.run'
+ *        new play.core.StaticApplication(new java.io.File("."))
+ *        :paste -raw app/tools/BadmintonClubCSVImporter.scala
+ *        ImportScript.run
  *
  * The Excel data must be in the following CSV format:
  *    dd/mm/yy
