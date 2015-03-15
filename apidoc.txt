@@ -1,0 +1,75 @@
+
+GET         /logout                        # logs the current user out
+
+POST        /authenticate                  # logs the provided user in
+expected data: form
+	phone #: string
+	password: string
+
+
+GET         /api/expenselist/:id           # gets the indicated expense list along with associate data like categories and expenses
+
+GET         /api/expenselist               # gets only the metadata for every expense list the currently logged in user is associated with
+
+POST        /api/expenselist               # insert a new expense list
+expected data: json
+	{
+		value: {
+			name: String,
+			description: String
+		}
+	}
+
+PUT         /api/expenselist/:eid/adduser/:uid   # adds the indicated user to the indicated expense list as a collaborator
+
+POST        /api/expense                   # inserts a new expense
+expected data: json
+	{
+		value: {
+			location: String,
+			description: String,
+			parentListId: Long,
+			categoryId: Long,
+			amount: Integer,
+			participants: [
+				{
+					userId: Long
+					paidAmount: Double,
+					responsibleAmount: Double
+				}
+			]
+		}
+	}
+
+PUT         /api/expense/:id                # modifies the expense indicated by the id
+expected data: json
+	{
+		value: {
+			location: String,
+			description: String,
+			parentListId: Long,
+			categoryId: Long,
+			amount: Integer
+		}
+	}
+
+POST        /api/category                   # get the category associated with the provided information, creating a new one if it doesn't already exist
+expected data: json
+	{
+		value: {
+			name: String,
+			parentListId: Long
+		}
+	}
+
+GET         /api/user                       # gets the currently logged in user
+
+POST        /api/user                       # creates a new user
+expected data: json
+	{
+		value: {
+			phone: String,
+			email: String,
+			password: String
+		}
+	}
