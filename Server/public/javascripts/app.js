@@ -29,18 +29,42 @@ $(document).ready(function () {
 
 	$.get("/api/expenselist/1", function(data) {
 		var activeDate;
+		var activeExpenseUl;
+
 		for (var i = data.expenses.length-1; i >= 0; i--) {
 			var currentExpense = data.expenses[i];
 			var currentConvertedDate = convertTime(currentExpense.createDate);
+
 			if (currentConvertedDate !== activeDate) {
-				var activeDate = convertTime(currentExpense.createDate);
-				var newDay = $("<div class='day-log'></div>");
-				createNewDay(activeDate, newDay);
+				// Create a header for a new day
+				activeDate = convertTime(currentExpense.createDate);
+				activeExpenseUl = $("<ul class='expense-list'></ul>");
+
+				var newDayContainerEl = $("<div class='day-log'></div>");
+				var newDateHeading = $("<h2 class='date-heading'>"+activeDate+"</h2>");
+				var tableHeadings = $("<li class='table-headings'></li>");
+				var tableColumn = $("<div class='table-column'></div>");
+				var columns = ["Business", "Description", "Category", "Cost"];
+
+				// Add all table headings
+				for (var k = 0; k < columns.length; k++) {
+					$("<div class='table-column'>"+columns[k]+"</div>").appendTo(tableHeadings);
+				}
+
+				activeExpenseUl.append(tableHeadings);
+
+				newDayContainerEl.append(newDateHeading);
+				newDayContainerEl.append(activeExpenseUl);
+
+				// Add the new element to the document DOM tree
+				expenseLogEl.append(newDayContainerEl);
 			}
+
 			var busName = currentExpense.location;
 			var items = currentExpense.description;
 			var amount = parseFloat(currentExpense.amount/100).toFixed(2);
-			createExpense(newDay, busName, items, amount);
+			var createdLi = createExpense(busName, items, amount);
+			activeExpenseUl.append(createdLi);
 		}
 	});
 });
@@ -58,134 +82,163 @@ var Expense = function() {
 var newExpense = undefined;
 
 // On-click events
-$(newExpBtn).click(
+newExpBtn.click(
 	function() {
-		$(expenseLogEl).addClass('hidden');
-		$(expenseFormEl).removeClass('hidden');
+		expenseLogEl.addClass('hidden');
+		expenseFormEl.removeClass('hidden');
 		newExpense = new Expense();
 		$("#prog1").addClass('current-prog');
-		$(busNameInputEl).focus();
+		busNameInputEl.focus();
 	}
 );
 
-newExpBtn.onclick = function() {
-	$(expenseLogEl).addClass('hidden');
-	$(expenseFormEl).removeClass('hidden');
-	newExpense = new Expense();
-	$("#prog1").addClass('current-prog');
-	$(busNameInputEl).focus();
-}
+cancelBtn.click(
+	function() {
+		var input = confirm("Your changes will not be saved. Continue?");
+		if (input == true) {
+			expenseLogEl.removeClass('hidden');
+			expenseFormEl.addClass('hidden');
+			resetExpenseForm();
+		}
+	}
+);
 
-cancelBtn.onclick = function() {
-	var input = confirm("Your changes will not be saved. Continue?");
-	if (input == true) {
-		$(expenseLogEl).removeClass('hidden');
-		$(expenseFormEl).addClass('hidden');
+saveBtn.click(
+	function() {
+		expensePOST();
 		resetExpenseForm();
 	}
-}
+);
 
-saveBtn.onclick = function() {
-	expensePOST();
-	resetExpenseForm();
-}
+notifBtn.click(
+	function() {
+		notifBtn.addClass('hidden');
+	}
+);
 
-notifBtn.onclick = function() {
-	$(notifBtn).addClass('hidden');
-} 
 // Functions for submitting data
 function submitBusName(event) {
 	if (event.keyCode === 13) {
 		newExpense.busName = $(busNameInputEl).val(); 
-		console.log(newExpense.busName);
-		$(busQ).addClass('hidden');
-		$(catQ).removeClass('hidden');
+		busQ.addClass('hidden');
+		catQ.removeClass('hidden');
 		$("#prog2").addClass('current-prog');
-		$(catInputEl).focus();
+		catInputEl.focus();
 	}
 }
 
 function submitCat(event) {
 	if (event.keyCode === 13) {
-		newExpense.category = $(catInputEl).val(); 
-		console.log(newExpense.category);
-		$(catQ).addClass('hidden');
-		$(costQ).removeClass('hidden');
+		newExpense.cat = catInputEl.val();
+		catQ.addClass('hidden');
+		costQ.removeClass('hidden');
 		$("#prog3").addClass('current-prog');
-		$(costInputEl).focus();
+		costInputEl.focus();
 	}
 }
 
 function submitCost(event) {
 	if (event.keyCode === 13) {
-		newExpense.cost = Number.parseInt($(costInputEl).val())*100; 
-		console.log(newExpense.cost);
-		$(costQ).addClass('hidden');
-		$(itemsQ).removeClass('hidden');
+		newExpense.cost = Number.parseInt(costInputEl.val())*100; 
+		costQ.addClass('hidden');
+		itemsQ.removeClass('hidden');
 		$("#prog4").addClass('current-prog');
-		$(itemsInputEl).focus();
+		itemsInputEl.focus();
 	}
 }
 
 function submitItems(event) {
-	if (event.keyCode === 13) {
-		newExpense.items.push($(itemsInputEl).val());
-		updateList($(itemsInputEl).val());
+	if (itemsInputEl.val()) {
+		if (event.keyCode === 13) {
+			newExpense.items.push($(itemsInputEl).val());
+			updateList(itemsInputEl.val());
+			itemsInputEl.val() == '';
+		}
 	}
 }
 
 function expensePOST() {
 	var itemDescription = "";
-	for (var j = 0; j < newExpense.items.length; j++) {
+	for (j = 0; j < newExpense.items.length; j++) {
 		itemDescription += newExpense.items[j];
-		if (j==newExpense.items[j]<1) {
+		if (j < newExpense.items.length-1) {
 			itemDescription += ", ";
 		}
+		if (j == newExpense.items.length-2) {
+			itemDescription += "and ";
+		}
 	}
+	console.log(itemDescription);
 
 	var expenseData = {
 	  "value": {
 	    "location": newExpense.busName,
-	    "description": newExpense.items,
+	    "description": itemDescription,
+	    "categoryId": newExpense.cat,
 	    "amount": newExpense.cost,
-	    "parentId": 1
+	    "parentListId": 1,
+	    "participants": []
 	  }
 	}
 
 	$.ajax({
 		type: "post",
-		url: "/api/expense",
-		data: JSON.stringify(expenseData),
+		url: "/api/category",
+		data: JSON.stringify({
+			"value": {
+				"name": newExpense.cat,
+				"parentListId": 1
+			}
+		}),
+		success: function (data) {
+			$.ajax({
+				type: "post",
+				url: "/api/expense",
+				data: JSON.stringify({
+				 	"value": {
+					    "location": newExpense.busName,
+					    "description": itemDescription,
+					    "categoryId": data.expenseCategoryId,
+					    "amount": newExpense.cost,
+					    "parentListId": 1,
+					    "participants": []
+					}
+				}),
+				"contentType": "application/json",
+				success: function() {
+					location.reload();
+				}
+			});
+		},
 		"contentType": "application/json"
 	});
 }
 
 // Creates a new date heading
-function createNewDay(activeDate, newDay) {
-	var newDateHeading = $("<h2 class='date-heading'>"+activeDate+"</h2>");
-	$(expenseLogEl).append(newDay);
-	$(newDay).append(newDateHeading);
+function createNewDayHeader(activeDate, newDay) {
+	return expenseUl
 }
 
 // Fills out each expense 
-function createExpense(newDay, busName, items, amount) {
-	var expenseUl = $("<ul class='expense-list'></ul>");
+function createExpense(busName, items, amount, category) {
 	var expenseLi = $("<li class='expense'></li>");
 	var expenseBusName = $("<div class='bus-name'><span>"+busName+"</span></div>");
-	var expenseItems = $("<div class='items'>"+items+"</div>");
-	var expenseCost = $("<div class='cost'>"+amount+"</div>");
-	$(newDay).append(expenseUl);
-	$(expenseUl).append(expenseLi);
-	$(expenseLi).append(expenseBusName);
-	$(expenseLi).append(expenseItems);
-	$(expenseLi).append(expenseCost);
+	var expenseCat = $("<div class='category'><span>"+category+"</span></div>");
+	var expenseItems = $("<div class='items'><span>"+items+"</span></div>");
+	var expenseCost = $("<div class='cost'><span>"+amount+"</span></div>");
+
+	expenseLi.append(expenseBusName);
+	expenseLi.append(expenseItems);
+	expenseLi.append(expenseCat);
+	expenseLi.append(expenseCost);
+
+	return expenseLi;
 }
 
 // Item list 
 function updateList(item) {
 	var newLi = $("<li>"+item+"</li>");
 	$("#itemList").append(newLi);
-	console.log("mar");
 	$("#itemsInput").val('');
 }
 
@@ -197,24 +250,25 @@ function convertTime(epochTime) {
 }
 
 // Event Listeners
+busNameInputEl.on("keypress", submitBusName)
 busNameInput.addEventListener("keypress", submitBusName)
-catInput.addEventListener("keypress", submitCat)
-costInput.addEventListener("keypress", submitCost)
-itemsInput.addEventListener("keypress", submitItems)
+catInputEl.on("keypress", submitCat)
+costInputEl.on("keypress", submitCost)
+itemsInputEl.on("keypress", submitItems)
 
 // Reset expense form 
 function resetExpenseForm() {
-	busNameInputEl.value="";
-	catInputEl.value="";
-	costInputEl.value="";
-	itemsInputEl.value="";
-	itemListEl.innerHTML="";
-	itemsQ.classList.add('hidden');
-	busQ.classList.remove('hidden');
-	expenseFormEl.classList.add('hidden');
-	$(expenseLogEl).removeClass('hidden');	
-	document.getElementById("prog1").classList.remove('current-prog');
-	document.getElementById("prog2").classList.remove('current-prog');
-	document.getElementById("prog3").classList.remove('current-prog');
-	document.getElementById("prog4").classList.remove('current-prog');
+	busNameInputEl.val('');
+	catInputEl.val('');
+	costInputEl.val('');
+	itemsInputEl.val('');
+	itemListEl.html('');
+	itemsQ.addClass('hidden');
+	busQ.removeClass('hidden');
+	expenseFormEl.addClass('hidden');
+	expenseLogEl.removeClass('hidden');	
+	$("#prog1").removeClass('current-prog');
+	$("#prog2").removeClass('current-prog');
+	$("#prog3").removeClass('current-prog');
+	$("#prog4").removeClass('current-prog');
 }

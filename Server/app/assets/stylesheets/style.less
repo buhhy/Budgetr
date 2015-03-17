@@ -202,18 +202,11 @@ html {
 							display: table-cell;
 							padding-bottom: 0.6em;
 
-							&.bus-name {
-								width: 25%;
-								.truncate;
-							}
-
-							&.items {
-								width: 55%;
+							&.bus-name, &.items, &.category {
 								.truncate;
 							}
 
 							&.cost {
-								width: 20%;
 								text-align: right;
 							}
 						}
@@ -223,6 +216,27 @@ html {
 				.day-log {
 					margin: 0.7em 0;
 					width: 98%;
+
+					.table-headings {
+						display: table;
+						margin: 0 0.5em 0.8em;
+						padding-bottom: 0.5em;
+						width: 99.5%;
+						letter-spacing: 1px;
+						border-bottom: 1px solid #ace6d7;
+						color: #6ebca7;
+
+						.table-column {
+							display: table-cell;
+							text-transform: uppercase;
+							font-size: 0.9em;
+							margin-left: 0.5em;
+
+							&:last-child {
+								text-align: right;
+							}
+						}
+					}
 				}
 
 				.truncate {
