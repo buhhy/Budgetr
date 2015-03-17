@@ -17,7 +17,7 @@ PUT         /api/expenselist/:eid/adduser/:uid        controllers.ExpenseListCon
 POST        /api/expense                              controllers.ExpenseController.newExpense
 PUT         /api/expense/:id                          controllers.ExpenseController.editExpense(id: Long)
 
-POST        /api/category                             controllers.ExpenseCategoryController.newExpenseCategory
+POST        /api/category                             controllers.ExpenseCategoryController.getOrNewExpenseCategory
 
 GET         /api/user                                 controllers.UserController.currentUser
 POST        /api/user                                 controllers.UserController.newUser

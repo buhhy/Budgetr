@@ -13,14 +13,24 @@ object ExpenseCategoryController extends Controller with LoginLogout
 
   implicit val eciw = ExpenseCategory.InsertedJsonWriter
 
-  def newExpenseCategory = StackAction(AuthorityKey -> NormalUser) { implicit request =>
-    implicit val ecjr = ExpenseCategory.jsonReaderFromUserId(loggedIn.userId)
+  def getOrNewExpenseCategory = StackAction(AuthorityKey -> NormalUser) { implicit request =>
+    implicit val expenseCategoryJR = ExpenseCategory.jsonReaderFromUserId(loggedIn.userId)
 
     ControllerHelper.withJsonRequest { json =>
       val newCat = json.as[ExpenseCategory]
-      DBExpenseCategory.insert(newCat) match {
-        case Left(insertedCat) =>
-          Ok(Json.toJson(insertedCat))
+
+      // Try to find the category first
+      DBExpenseCategory.find(newCat.name, newCat.parentListId) match {
+        case Left(Some(exp)) =>
+          Ok(Json.toJson(exp))
+        case Left(None) =>
+          // If it isn't found, create it
+          DBExpenseCategory.insert(newCat) match {
+            case Left(insertedCat) =>
+              Ok(Json.toJson(insertedCat))
+            case Right(error) =>
+              BadRequest(error.toJson)
+          }
         case Right(error) =>
           BadRequest(error.toJson)
       }
