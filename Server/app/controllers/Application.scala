@@ -4,6 +4,7 @@ import _root_.db.DBUser
 import controllers.security.AuthenticationConfig
 import jp.t2v.lab.play2.auth.{AuthElement, LoginLogout}
 import models.{NormalUser, User}
+import play.api.Logger
 import play.api.data.{Forms, Form}
 import play.api.mvc._
 import play.api.data.Forms._
@@ -46,10 +47,13 @@ object Application extends Controller with LoginLogout with AuthElement with Aut
     form.bindFromRequest.fold(
       formWithErrors => Future.successful(BadRequest(views.html.index(form.errors.map(_.message)))),
       { case (phone, pass) =>
+        Logger.info(s"Authenticating: $phone")
         DBUser.authenticate(phone, pass) match {
           case Left(user) =>
+            Logger.info(s"Authentication succeeded: ${user.userId}")
             gotoLoginSucceeded(user.userId)
           case Right(msg) =>
+            Logger.info(s"Authentication failed: $msg")
             Future.successful(Forbidden(views.html.index(Seq(msg.message))))
         }
       }

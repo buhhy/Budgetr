@@ -179,7 +179,7 @@ function updateList(item) {
 // Converts time
 function convertTime(epochTime) {
   var convertedTime = new Date(epochTime);
-  var options = { weekday: 'long', month: 'long', day: 'numeric', timeZone: 'America/Los_Angeles' };
+  var options = { weekday: 'long', month: 'long', day: 'numeric' };
   return convertedTime.toLocaleDateString('en-US', options);
 }
 
