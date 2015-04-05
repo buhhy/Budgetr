@@ -4,11 +4,11 @@ import anorm.SqlParser._
 import anorm.{NamedParameter, ~}
 import controllers.common.DBError
 import controllers.common.Errors.ResultWithError
-import models.{ExpenseList, InsertedExpense, InsertedExpenseCategory, InsertedExpenseList}
+import db.common.{AnormHelper, AnormInsertHelper}
+import models._
 import org.joda.time.DateTime
 import play.api.Play.current
 import play.api.db.DB
-import db.common.{AnormInsertHelper, AnormHelper}
 
 object DBExpenseList {
   private val TableName = "expense_list"
@@ -63,7 +63,7 @@ object DBExpenseList {
     helper.update(toData(explist), Seq(idColumn(id)))
 
   def delete(id: Long) = helper.delete(Seq(idColumn(id)))
-  def truncate = helper.truncate
+  def truncate() = helper.truncate()
 
   def find(id: Long): ResultWithError[InsertedExpenseList] = {
     DB.withConnection { implicit conn =>
@@ -120,6 +120,26 @@ object DBExpenseList {
            """.stripMargin)
             .on(idColumn(id))
             .as(DBExpenseCategory.ExpenseCategoryParser.*))
+      }
+    }
+  }
+
+  def findAssociatedUsers(id: Long): ResultWithError[Seq[InsertedUserExpenseListJoinWithUser]] = {
+    DB.withConnection { implicit conn =>
+      AnormHelper.runSql {
+        Left(anorm.SQL(
+          s"""
+             |SELECT * FROM ${DBUserExpenseListJoin.TableName} AS uej
+             |  INNER JOIN ${DBUser.TableName} AS user
+             |    ON uej.${DBUserExpenseListJoin.C_UID} = user.${DBUser.C_ID}
+             |  WHERE uej.${DBUserExpenseListJoin.C_EID} = ${AnormHelper.replaceStr(C_ID)}
+           """.stripMargin)
+            .on(idColumn(id))
+            .as(
+              (DBUserExpenseListJoin.UserExpenseListJoinParser ~ DBUser.UserParser)
+                  .map(flatten)
+                  .map { case (uej, user) => InsertedUserExpenseListJoinWithUser(uej, user) }
+                  .*))
       }
     }
   }

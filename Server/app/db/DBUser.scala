@@ -11,12 +11,12 @@ import play.api.db.DB
 import db.common.{AnormInsertHelper, AnormHelper}
 
 object DBUser {
-  private val TableName = "user"
-  private val C_ID = "user_id"
-  private val C_Phone = "phone"
-  private val C_Email = "email"
-  private val C_Password = "password"
-  private val C_CDate = "create_date"
+  private[db] val TableName = "user"
+  private[db] val C_ID = "user_id"
+  private[db] val C_Phone = "phone"
+  private[db] val C_Email = "email"
+  private[db] val C_Password = "password"
+  private[db] val C_CDate = "create_date"
 
   private val helper = new AnormHelper(TableName)
   private val insertHelper = AnormInsertHelper(TableName, C_CDate)

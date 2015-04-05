@@ -16,19 +16,20 @@ case class User(phone: String, email: String, password: String, role: Role = Nor
 case class InsertedUser(userId: Long, createDate: DateTime, user: User)
 
 object User {
-  private val JsonWriterBase = (JsPath \ "phone").write[String] and
-      (JsPath \ "email").write[String] and
-      (JsPath \ "password").write[String]
-
   val JsonReader = ((JsPath \ "phone").read[String] and
-        (JsPath \ "email").read[String] and
-        (JsPath \ "password").read[String]).apply { (phone, email, pass) =>
-      User(phone, email, pass)
-    }
-
-  val NewJsonWriter = JsonWriterBase.apply { user: User => (user.phone, user.email, user.password)}
-
-  val InsertedJsonWriter = ((JsPath \ "userId").write[Long] and
-      (JsPath \ "createDate").write[DateTime]
-      and NewJsonWriter).apply(unlift(InsertedUser.unapply))
+      (JsPath \ "email").read[String] and
+      (JsPath \ "password").read[String]).apply { (phone, email, pass) =>
+    User(phone, email, pass)
+  }
+  
+  val JsonWriter = ((JsPath \ "phone").write[String]
+      and (JsPath \ "email").write[String]).apply { user: User =>
+    (user.phone, user.email)
+  }
+}
+  
+object InsertedUser {
+  val JsonWriter = ((JsPath \ "userId").write[Long]
+      and (JsPath \ "createDate").write[DateTime]
+      and User.JsonWriter).apply(unlift(InsertedUser.unapply))
 }

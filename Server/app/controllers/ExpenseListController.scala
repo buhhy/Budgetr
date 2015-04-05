@@ -6,15 +6,15 @@ import jp.t2v.lab.play2.auth.{AuthElement, LoginLogout}
 import models._
 import play.api.libs.json.Json
 import play.api.mvc.Controller
-import controllers.common.ControllerHelper
+import controllers.common.{Errors, ControllerHelper}
 
 object ExpenseListController extends Controller with LoginLogout
     with AuthElement with AuthenticationConfig {
 
-  implicit val eljw = ExpenseList.NewJsonWriter
-  implicit val ieljw = ExpenseList.InsertedJsonWriter
-  implicit val ejw = Expense.NewJsonWriter
-  implicit val ecjw = ExpenseCategory.InsertedJsonWriter
+  implicit val expenseListJW = ExpenseList.NewJsonWriter
+  implicit val insertedExpenseListJW = InsertedExpenseList.JsonWriter
+  implicit val expenseJW = ExpenseJson.NewJsonWriter
+  implicit val expenseCategoryJW = ExpenseCategory.InsertedJsonWriter
 
   def newExpenseList = StackAction(AuthorityKey -> NormalUser) { implicit request =>
     val userId = loggedIn.userId
@@ -44,15 +44,13 @@ object ExpenseListController extends Controller with LoginLogout
         val expenseResults = DBExpenseList.findAssociatedExpenses(id)
         // Get the expense categories associated with the selected expense list ID.
         val categoryResults = DBExpenseList.findAssociatedExpenseCategories(id)
+        // Get the user members associated with the selected expense list ID.
+        val memberResults = DBExpenseList.findAssociatedUsers(id)
 
-        (expenseResults, categoryResults) match {
-          case (Left(expenses), Left(categories)) =>
-            Ok(result.toJson(expenses, categories))
-          case (Right(err1), Right(err2)) =>
-            BadRequest(Json.toJson(Seq(err1.toJson, err2.toJson)))
-          case (_, Right(err)) =>
-            BadRequest(err.toJson)
-          case (Right(err), _) =>
+        Errors.compose(Errors.compose(expenseResults, categoryResults), memberResults) match {
+          case Left(((expenses, categories), members)) =>
+            Ok(result.toJson(expenses, categories, members))
+          case Right(err) =>
             BadRequest(err.toJson)
         }
       case Right(err) =>
@@ -61,10 +59,9 @@ object ExpenseListController extends Controller with LoginLogout
   }
 
   def getExpenseLists = StackAction(AuthorityKey -> NormalUser) { implicit request =>
-    implicit val writer = ExpenseList.InsertedJsonWriter
     DBExpenseList.filterLists(loggedIn.userId) match {
       case Left(result) =>
-        Ok(Json.toJson(result.map(writer.writes)))
+        Ok(Json.toJson(result))
       case Right(err) =>
         BadRequest(err.toJson)
     }

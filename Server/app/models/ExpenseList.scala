@@ -9,13 +9,20 @@ case class ExpenseList(creatorId: Long, name: String, desc: String) {
 }
 
 case class InsertedExpenseList(expListId: Long, createDate: DateTime, expenseList: ExpenseList) {
-  private implicit val ejw = Expense.InsertedJsonWriter
-  private implicit val ecjw = ExpenseCategory.InsertedJsonWriter
+  private implicit val expenseJW = ExpenseJson.InsertedJsonWriter
+  private implicit val expenseCategoryJW = ExpenseCategory.InsertedJsonWriter
+  private implicit val userExpenseListJoinJW = InsertedUserExpenseListJoinWithUser.JsonWriter
 
-  def toJson(expenses: Seq[InsertedExpense], categories: Seq[InsertedExpenseCategory]): JsObject =
-    ExpenseList.InsertedJsonWriter.writes(this) ++
+  def toJson(
+      expenses: Seq[InsertedExpense],
+      categories: Seq[InsertedExpenseCategory],
+      members: Seq[InsertedUserExpenseListJoinWithUser]): JsObject = {
+
+    InsertedExpenseList.JsonWriter.writes(this) ++
         Json.obj("expenses" -> Json.toJson(expenses)) ++
-        Json.obj("categories" -> Json.toJson(categories))
+        Json.obj("categories" -> Json.toJson(categories)) ++
+        Json.obj("members" -> Json.toJson(members))
+  }
 }
 
 object ExpenseList {
@@ -25,12 +32,14 @@ object ExpenseList {
 
   val NewJsonWriter = JsonWriterBase.apply(unlift(ExpenseList.unapply))
 
-  val InsertedJsonWriter = ((JsPath \ "expenseListId").write[Long] and
-      (JsPath \ "createDate").write[DateTime] and
-      NewJsonWriter).apply(unlift(InsertedExpenseList.unapply))
-
   def jsonReaderFromUserId(userId: Long) = ((JsPath \ "name").read[String] and
         (JsPath \ "description").read[String]).apply { (name, desc) =>
       ExpenseList(userId, name, desc)
     }
+}
+
+object InsertedExpenseList {
+  val JsonWriter = ((JsPath \ "expenseListId").write[Long] and
+      (JsPath \ "createDate").write[DateTime] and
+      ExpenseList.NewJsonWriter).apply(unlift(InsertedExpenseList.unapply))
 }

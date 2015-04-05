@@ -1,20 +1,22 @@
 package models
 
+import controllers.common.ErrorType
+import db.{DBExpense, DBUserExpenseJoin}
 import org.joda.time.DateTime
-import play.api.libs.json.{JsObject, JsPath}
 import play.api.libs.functional.syntax._
+import play.api.libs.json.{JsObject, JsPath}
 
 case class Expense(
     location: String, desc: String, parentListId: Long,
     creatorUserId: Long, categoryId: Long, amount: Int) {
-  def toJson: JsObject = Expense.NewJsonWriter.writes(this)
+  def toJson: JsObject = ExpenseJson.NewJsonWriter.writes(this)
 }
 
 case class InsertedExpense(expId: Long, createDate: DateTime, expense: Expense) {
-  def toJson: JsObject = Expense.InsertedJsonWriter.writes(this)
+  def toJson: JsObject = ExpenseJson.InsertedJsonWriter.writes(this)
 }
 
-object Expense {
+object ExpenseJson {
   val JSON_EXPENSE_ID = "expenseId"
   val JSON_CREATE_DATE = "createDate"
   val JSON_LOCATION = "location"
@@ -66,4 +68,31 @@ object Expense {
 
   def jsonReaderSetUserId(userId: Long) =
     JsonReaderBase.apply { (loc, desc, pid, ecid, am) => Expense(loc, desc, pid, userId, ecid, am) }
+}
+
+object ExpenseOperator {
+  def createExpense(newList: Expense, participantProvider: Long => Seq[UserExpenseJoin]):
+      Either[(InsertedExpense, Seq[InsertedUserExpenseJoin]), ErrorType] = {
+
+    DBExpense.insert(newList) match {
+      case Left(insertedList) =>
+        val parts = participantProvider(insertedList.expId)
+        // If no participants are provided, then add the expense list creator as a default
+        // participant that paid for the full amount and is responsible for the full amount.
+        val filledParts = if (parts.isEmpty) {
+          Seq(new UserExpenseJoin(newList.creatorUserId, insertedList.expId, 1.0, 1.0))
+        } else {
+          parts
+        }
+
+        DBUserExpenseJoin.insertAll(filledParts) match {
+          case Left(insParts) =>
+            Left((insertedList, insParts))
+          case Right(error) =>
+            Right(error)
+        }
+      case Right(error) =>
+        Right(error)
+    }
+  }
 }

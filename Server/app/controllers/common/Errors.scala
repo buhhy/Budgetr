@@ -3,7 +3,6 @@ package controllers.common
 import play.api.libs.json.{JsObject, Json}
 
 trait ErrorType {
-
   protected def msg: String
   protected def errorType: String = getClass.getSimpleName
 
@@ -25,4 +24,15 @@ package object Errors {
   type ResultWithError[A] = Either[A, ErrorType]
   val NoJsonError = JSONError("No JSON object was provided.")
   val NoJsonValueFieldError = JSONError("JSON object does not contain the `value` field.")
+
+  def compose[A, B](
+      result1: ResultWithError[A],
+      result2: ResultWithError[B]): ResultWithError[(A, B)] = {
+    (result1, result2) match {
+      case (Left(r1), Left(r2)) => Left(r1, r2)
+      case (Right(e1), Right(e2)) => Right(MultiError(Seq(e1, e2)))
+      case (Right(e), _) => Right(e)
+      case (_, Right(e)) => Right(e)
+    }
+  }
 }
