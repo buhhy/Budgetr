@@ -3,7 +3,7 @@ package controllers
 import controllers.security.AuthenticationConfig
 import db.DBExpenseCategory
 import jp.t2v.lab.play2.auth.{AuthElement, LoginLogout}
-import models.{ExpenseCategory, NormalUser}
+import models.{InsertedExpenseCategory, ExpenseCategory, NormalUser}
 import play.api.libs.json.Json
 import play.api.mvc.Controller
 import controllers.common.ControllerHelper
@@ -11,7 +11,7 @@ import controllers.common.ControllerHelper
 object ExpenseCategoryController extends Controller with LoginLogout
     with AuthElement with AuthenticationConfig {
 
-  implicit val eciw = ExpenseCategory.InsertedJsonWriter
+  implicit val insertedExpenseCategoryJW= InsertedExpenseCategory.JsonWriter
 
   def getOrNewExpenseCategory = StackAction(AuthorityKey -> NormalUser) { implicit request =>
     implicit val expenseCategoryJR = ExpenseCategory.jsonReaderFromUserId(loggedIn.userId)

@@ -16,12 +16,14 @@ object ExpenseCategory {
       (JsPath \ "creatorId").write[Long] and
       (JsPath \ "parentListId").write[Long]).apply(unlift(ExpenseCategory.unapply))
 
-  val InsertedJsonWriter = ((JsPath \ "expenseCategoryId").write[Long] and
-      (JsPath \ "createDate").write[DateTime] and
-      JsonWriter).apply(unlift(InsertedExpenseCategory.unapply))
-
   def jsonReaderFromUserId(userId: Long) =
     JsonReaderBase.apply { (name, pid) =>
       ExpenseCategory(name, userId, pid)
     }
+}
+
+object InsertedExpenseCategory {
+  val JsonWriter = ((JsPath \ "expenseCategoryId").write[Long]
+      and (JsPath \ "createDate").write[DateTime]
+      and ExpenseCategory.JsonWriter).apply(unlift(InsertedExpenseCategory.unapply))
 }

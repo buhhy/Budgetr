@@ -11,10 +11,10 @@ import controllers.common.{Errors, ControllerHelper}
 object ExpenseListController extends Controller with LoginLogout
     with AuthElement with AuthenticationConfig {
 
-  implicit val expenseListJW = ExpenseList.NewJsonWriter
+  implicit val expenseListJW = ExpenseList.JsonWriter
   implicit val insertedExpenseListJW = InsertedExpenseList.JsonWriter
   implicit val expenseJW = ExpenseJson.NewJsonWriter
-  implicit val expenseCategoryJW = ExpenseCategory.InsertedJsonWriter
+  implicit val insertedExpenseCategoryJW = InsertedExpenseCategory.JsonWriter
 
   def newExpenseList = StackAction(AuthorityKey -> NormalUser) { implicit request =>
     val userId = loggedIn.userId
