@@ -13,7 +13,7 @@ object ExpenseListController extends Controller with LoginLogout
 
   implicit val expenseListJW = ExpenseList.JsonWriter
   implicit val insertedExpenseListJW = InsertedExpenseList.JsonWriter
-  implicit val expenseJW = ExpenseJson.NewJsonWriter
+  implicit val expenseJW = Expense.JsonWriter
   implicit val insertedExpenseCategoryJW = InsertedExpenseCategory.JsonWriter
 
   def newExpenseList = StackAction(AuthorityKey -> NormalUser) { implicit request =>

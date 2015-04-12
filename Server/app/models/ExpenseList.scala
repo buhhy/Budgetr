@@ -9,7 +9,7 @@ case class ExpenseList(creatorId: Long, name: String, desc: String) {
 }
 
 case class InsertedExpenseList(expListId: Long, createDate: DateTime, expenseList: ExpenseList) {
-  private implicit val expenseJW = ExpenseJson.InsertedJsonWriter
+  private implicit val insertedExpenseJW = InsertedExpense.JsonWriter
   private implicit val expenseCategoryJW = InsertedExpenseCategory.JsonWriter
   private implicit val userExpenseListJoinJW = InsertedUserExpenseListJoinWithUser.JsonWriter
 

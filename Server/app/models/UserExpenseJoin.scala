@@ -29,11 +29,13 @@ object UserExpenseJoin {
       (JsPath \ JSON_PAID_AMOUNT).write[Double] and
       (JsPath \ JSON_RESPONSIBLE_AMOUNT).write[Double]).apply(unlift(UserExpenseJoin.unapply))
 
-  val InsertedJsonWriter = ((JsPath \ "createDate").write[DateTime] and JsonWriter)
-      .apply(unlift(InsertedUserExpenseJoin.unapply))
-
   def jsonReaderSetExpenseId(expenseId: Long) = ((JsPath \ JSON_USER_ID).read[Long] and
       (JsPath \ JSON_PAID_AMOUNT).read[Double] and
       (JsPath \ JSON_RESPONSIBLE_AMOUNT).read[Double])
       .apply { (uid, pamt, ramt) => UserExpenseJoin(uid, expenseId, pamt, ramt) }
+}
+
+object InsertedUserExpenseJoin {
+  val JsonWriter = ((JsPath \ "createDate").write[DateTime] and UserExpenseJoin.JsonWriter)
+      .apply(unlift(InsertedUserExpenseJoin.unapply))
 }

@@ -11,20 +11,22 @@ import play.api.mvc.Controller
 object ExpenseController extends Controller with LoginLogout
     with AuthElement with AuthenticationConfig {
 
+  implicit val insertedExpenseWithDataJW = InsertedExpenseWithAllData.JsonWriter
+  implicit val insertedExpenseJW = InsertedExpense.JsonWriter
+
   def newExpense = StackAction(AuthorityKey -> NormalUser) { implicit request =>
-    implicit val expenseJR = ExpenseJson.jsonReaderSetUserId(loggedIn.userId)
+    implicit val expenseJR = Expense.jsonReaderSetUserId(loggedIn.userId)
 
     ControllerHelper.withJsonRequest { json =>
       val newList = json.as[Expense]
       val partProvider = (expId: Long) => {
         implicit val userExpenseJR = UserExpenseJoin.jsonReaderSetExpenseId(expId)
-        (json \ ExpenseJson.JSON_PARTICIPANTS).as[Seq[UserExpenseJoin]]
+        (json \ Expense.JSON_PARTICIPANTS).as[Seq[UserExpenseJoin]]
       }
 
-      ExpenseOperator.createExpense(newList, partProvider) match {
-        case Left((list, parts)) =>
-          implicit val insertedExpenseJW = ExpenseJson.insertedFullJsonWriter(parts)
-          Ok(Json.toJson(list))
+      Expense.createExpense(newList, partProvider) match {
+        case Left(insertedExpense) =>
+          Ok(Json.toJson(insertedExpense))
         case Right(err) =>
           BadRequest(err.toJson)
       }
@@ -32,8 +34,7 @@ object ExpenseController extends Controller with LoginLogout
   }
 
   def editExpense(eid: Long) = StackAction(AuthorityKey -> NormalUser) { implicit request =>
-    implicit val expenseJR = ExpenseJson.NewJsonReader
-    implicit val insertedExpenseJW = ExpenseJson.InsertedJsonWriter
+    implicit val expenseJR = Expense.JsonReader
 
     ControllerHelper.withJsonRequest { json =>
       val updatedList = json.as[Expense]
