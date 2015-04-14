@@ -2,6 +2,16 @@
  * Created by Terry Lei on 5/4/2015.
  */
 
+// Makes the provided class a subclass of another
+ui.extend = function (constructor) {
+  var _super = this.prototype || Object.prototype;
+  constructor.prototype = Object.create(_super);
+  constructor.prototype.constructor = constructor;
+  constructor.prototype.super = _super;
+  constructor.extend = ui.extend;
+  return constructor;
+};
+
 /**
  * UI for each page within the new expense stack widget.
  * @param $root
@@ -9,44 +19,53 @@
  * @param valueHandlers
  * @constructor
  */
-ui.NewExpenseWidgetScreen = function ($root, eventHooks, valueHandlers) {
-  eventHooks = eventHooks || {};
-  valueHandlers = valueHandlers || {};
+ui.NewExpenseWidgetScreen = ui.extend(
+    function ($root, eventHooks, valueHandlers) {
+      eventHooks = eventHooks || {};
+      valueHandlers = valueHandlers || {};
 
-  this.valueExtractor =
-      (valueHandlers.valueExtractor || function () { return this.$firstInput.val(); }).bind(this);
-  this.valueSerializer =
-      (valueHandlers.valueSerializer || function (json) { return json; }).bind(this);
-  this.valueWriter =
-      (valueHandlers.valueWriter || function (value) { this.$firstInput.val(value) }).bind(this);
-  this.valueClear =
-      (valueHandlers.valueClear || function () { this.$firstInput.val("") }).bind(this);
+      this.valueExtractor =
+          valueHandlers.valueExtractor || function () { return this.$firstInput.val(); };
+      this.valueSerializer =
+          valueHandlers.valueSerializer || function (json) { return json; };
+      this.valueWriter =
+          valueHandlers.valueWriter || function (value) { this.$firstInput.val(value) };
+      this.valueClear =
+          valueHandlers.valueClear || function () { this.$firstInput.val("") };
 
-  this.$root = $root;
-  this.$firstInput = $root.find("[data-first-input]");
-  this.$lastInput = $root.find("[data-last-input]");
-  this.$submitInput = $root.find("[data-submit-input]");
-  this.$submitButton = $root.find("[data-submit-button]");
+      this.$root = $root;
+      this.$firstInput = $root.find("[data-first-input]");
+      this.$lastInput = $root.find("[data-last-input]");
+      this.$submitInput = $root.find("[data-submit-input]");
+      this.$submitButton = $root.find("[data-submit-button]");
 
-  // Assign the next screen keypress handlers
-  this.$lastInput.on("keypress", function (event) {
-    // Enter key pressed
-    if (event.keyCode === 13 && eventHooks.next)
-      eventHooks.next();
-  });
+      // Assign the next screen keypress handlers
+      this.$lastInput.on("keypress", function (event) {
+        // Enter key pressed
+        if (event.keyCode === 13 && eventHooks.next)
+          eventHooks.next();
+      });
 
-  // Assign the submit handlers if any
-  this.$submitInput.on("keypress", (function (event) {
-    // Enter key pressed
-    if (event.keyCode === 13 && eventHooks.submit)
-      eventHooks.submit(this);
-  }).bind(this));
+      // Assign the submit handlers if any
+      this.$submitInput.on("keypress", (function (event) {
+        // Enter key pressed
+        if (event.keyCode === 13 && eventHooks.submit)
+          eventHooks.submit(this);
+      }).bind(this));
 
-  this.$submitButton.on("click", (function (event) {
-    event.preventDefault();
-    if (eventHooks.submit)
-      eventHooks.submit(this);
-  }).bind(this));
+      this.$submitButton.on("click", (function (event) {
+        event.preventDefault();
+        if (eventHooks.submit)
+          eventHooks.submit(this);
+      }).bind(this));
+    });
+
+ui.NewExpenseWidgetScreen.prototype.areKeysPressed = function (keyList, event) {
+  for (var i = 0; i < keyList.length; i++) {
+    if (keyList[i] === event.keyCode)
+      return true;
+  }
+  return false;
 };
 
 ui.NewExpenseWidgetScreen.prototype.show = function () {
@@ -61,7 +80,7 @@ ui.NewExpenseWidgetScreen.prototype.hide = function () {
 ui.NewExpenseWidgetScreen.prototype.value = function (arg) {
   // If no argument, retrieve value
   if (arg === undefined)
-    return this.valueExtractor(this);
+    return this.valueExtractor();
   else
     this.valueWriter(this, arg);
 };
@@ -74,22 +93,55 @@ ui.NewExpenseWidgetScreen.prototype.clear = function () {
   this.valueClear(this);
 };
 
+ui.NewExpenseWidgetScreen.prototype.serialize = function (json) {
+  return this.valueSerializer(json);
+};
+
 
 
 /**
  *
  */
-ui.NewExpenseWidgetItemsScreen = ui.NewExpenseWidgetScreen.extendClass(
+ui.NewExpenseWidgetItemsScreen = ui.NewExpenseWidgetScreen.extend(
     function ($root, eventHooks, valueHandlers) {
-      this.super.constructor.call(this, $root, eventHooks, valueHandlers);
+      this.super.constructor.call(
+          this, $root, eventHooks, $.extend({}, valueHandlers, {
+            valueExtractor: function () {
+              return this.$itemList
+                  .children(utils.idSelector("item"))
+                  .map(function () { return $(this).text(); })
+                  .reverse();
+            },
+            valueClear: function () {
+              this.$itemList.children().detach();
+              this.$itemInput.val("");
+            },
+            valueSerializer: function (json) {
+              json.description = utils.join(this.value(), ',');
+              return json;
+            }
+          }));
+      this.delimiterKeys = [44, 32];
+      this.deleteKeys = [8, 127];
       this.$itemInput = this.$root.find(utils.idSelector("itemInput"));
       this.$itemList = this.$root.find(utils.idSelector("itemList"));
 
-      this.$itemInput.on("keypress", (function (event) {
-        event.preventDefault();
-
-        if (event.keyCode === ','.charCodeAt(0)) {
-          console.log("abc");
+      this.$itemInput.on("keyup", (function (event) {
+        if (this.areKeysPressed(this.delimiterKeys, event)) {
+          // Add a new item when the delimiter is pressed
+          event.preventDefault();
+          var value = this.$itemInput.val().trim();
+          if (value) {
+            var $newElem = $("<li></li>").text(value).attr("data-id", "item");
+            this.$itemList.prepend($newElem);
+            this.$itemInput.val("");
+          }
+        } else if (this.areKeysPressed(this.deleteKeys, event)) {
+          // If the input field is empty, then delete the last item inserted
+          if (!this.$itemInput.val()) {
+            event.preventDefault();
+            this.$itemList.children().eq(0).detach();
+          }
         }
       }).bind(this));
     });
@@ -113,13 +165,34 @@ ui.NewExpenseWidget = function ($root, eventHooks) {
 
   var screenIds = [{
     id: "questionBusiness",
-    clazz: ui.NewExpenseWidgetScreen
+    clazz: ui.NewExpenseWidgetScreen,
+    handlers: {
+      valueSerializer: function (json) {
+        json.location = this.value();
+        return json;
+      }
+    }
   }, {
     id: "questionCategory",
-    clazz: ui.NewExpenseWidgetScreen
+    clazz: ui.NewExpenseWidgetScreen,
+    handlers: {
+      valueSerializer: function (json) {
+        json.categoryText = this.value();
+        return json;
+      }
+    }
   }, {
     id: "questionCost",
-    clazz: ui.NewExpenseWidgetScreen
+    clazz: ui.NewExpenseWidgetScreen,
+    handlers: {
+      valueSerializer: function (json) {
+        json.amount = this.value();
+        return json;
+      },
+      valueExtractor: function () {
+        return parseInt(this.$firstInput.val()) || 0;
+      }
+    }
   }, {
     id: "questionItems",
     clazz: ui.NewExpenseWidgetItemsScreen
@@ -129,10 +202,12 @@ ui.NewExpenseWidget = function ($root, eventHooks) {
   for (var i = 0; i < screenIds.length; i++) {
     var data = screenIds[i];
     this.orderedScreenList[i] =
-        new data.clazz($root.find(utils.idSelector(data.id)), {
-          next: this.nextScreen.bind(this),
-          submit: this.submit
-        });
+        new data.clazz(
+            $root.find(utils.idSelector(data.id)),
+            {
+              next: this.nextScreen.bind(this),
+              submit: this.submit.bind(this)
+            }, data.handlers);
   }
 
   for (var j = 0; j < this.indicatorList.length; j++)
@@ -188,6 +263,46 @@ ui.NewExpenseWidget.prototype.reset = function () {
   for (var i = 0; i < this.orderedScreenList.length; i++)
     this.orderedScreenList[i].clear();
   this.switchScreen(0);
+};
+
+ui.NewExpenseWidget.prototype.submit = function () {
+  var json = {};
+  for (var i = 0; i < this.orderedScreenList.length; i++) {
+    this.orderedScreenList[i].serialize(json);
+  }
+  console.log(json);
+
+  //$.ajax({
+  //  type: "post",
+  //  url: "/api/category",
+  //  data: JSON.stringify({
+  //    "value": {
+  //      "name": newExpense.category,
+  //      "parentListId": 1
+  //    }
+  //  }),
+  //  success: function (data) {
+  //    $.ajax({
+  //      type: "post",
+  //      url: "/api/expense",
+  //      data: JSON.stringify({
+  //        value: {
+  //          location: newExpense.location,
+  //          description: itemDescription,
+  //          categoryId: data.expenseCategoryId,
+  //          amount: newExpense.cost,
+  //          parentListId: 1,
+  //          participants: []
+  //        }
+  //      }),
+  //      contentType: "application/json",
+  //      success: function () {
+  //        location.reload();
+  //      }
+  //    });
+  //  },
+  //  contentType: "application/json"
+  //});
 };
 
 

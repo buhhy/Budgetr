@@ -12,15 +12,17 @@ var utils = {
   },
   idSelector: function (id) {
     return "[data-id='" + id + "']";
+  },
+  join: function (array, delim) {
+    delim = delim || ',';
+    var str = "";
+    for (var i = 0; i < array.length; i++) {
+      if (i > 0)
+        str += delim;
+      str += array[i];
+    }
+    return str;
   }
 };
 var models = {};
 var api = {};
-
-// Makes the provided class a subclass of another
-Object.prototype.extendClass = function (constructor) {
-  constructor.prototype = Object.create(this.prototype);
-  constructor.prototype.constructor = constructor;
-  constructor.super = constructor.prototype;
-  return constructor;
-};
