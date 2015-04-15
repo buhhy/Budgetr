@@ -94,7 +94,8 @@ object InsertedExpense {
 
 object InsertedExpenseWithAllData {
   implicit val insertedUserExpenseJoinJW = InsertedUserExpenseJoin.JsonWriter
-  val JsonWriter = (InsertedExpense.JsonWriter ~ JsPath.write[Seq[InsertedUserExpenseJoin]])
+  val JsonWriter = (InsertedExpense.JsonWriter ~
+      (JsPath \ Expense.JSON_PARTICIPANTS).write[Seq[InsertedUserExpenseJoin]])
       .apply(unlift(InsertedExpenseWithAllData.unapply))
 
 

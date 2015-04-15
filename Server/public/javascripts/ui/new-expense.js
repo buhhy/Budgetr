@@ -110,6 +110,7 @@ ui.NewExpenseWidgetItemsScreen = ui.NewExpenseWidgetScreen.extend(
               return this.$itemList
                   .children(utils.idSelector("item"))
                   .map(function () { return $(this).text(); })
+                  .toArray()
                   .reverse();
             },
             valueClear: function () {
@@ -121,7 +122,7 @@ ui.NewExpenseWidgetItemsScreen = ui.NewExpenseWidgetScreen.extend(
               return json;
             }
           }));
-      this.delimiterKeys = [44, 32];
+      this.delimiterKeys = [32, 188];
       this.deleteKeys = [8, 127];
       this.$itemInput = this.$root.find(utils.idSelector("itemInput"));
       this.$itemList = this.$root.find(utils.idSelector("itemList"));
@@ -130,7 +131,10 @@ ui.NewExpenseWidgetItemsScreen = ui.NewExpenseWidgetScreen.extend(
         if (this.areKeysPressed(this.delimiterKeys, event)) {
           // Add a new item when the delimiter is pressed
           event.preventDefault();
-          var value = this.$itemInput.val().trim();
+          var value = this.$itemInput.val();
+          // Remove the last character
+          value = value.substr(0, value.length - 1).trim();
+
           if (value) {
             var $newElem = $("<li></li>").text(value).attr("data-id", "item");
             this.$itemList.prepend($newElem);
@@ -152,9 +156,10 @@ ui.NewExpenseWidgetItemsScreen = ui.NewExpenseWidgetScreen.extend(
  * UI widget for the new expense form stack.
  * @param $root
  * @param eventHooks
+ * @param expenseListId
  * @constructor
  */
-ui.NewExpenseWidget = function ($root, eventHooks) {
+ui.NewExpenseWidget = function ($root, eventHooks, expenseListId) {
   eventHooks = eventHooks || {};
 
   this.$root = $root;
@@ -162,6 +167,7 @@ ui.NewExpenseWidget = function ($root, eventHooks) {
   this.currentScreenIndex = 0;
   this.$indicatorBar = $root.find(utils.idSelector("indicatorBar"));
   this.indicatorList = this.$indicatorBar.find(utils.idSelector("indicator")).toArray();
+  this.expenseListId = expenseListId;
 
   var screenIds = [{
     id: "questionBusiness",
@@ -186,7 +192,8 @@ ui.NewExpenseWidget = function ($root, eventHooks) {
     clazz: ui.NewExpenseWidgetScreen,
     handlers: {
       valueSerializer: function (json) {
-        json.amount = this.value();
+        // Amount needs to be converted to cents
+        json.amount = Math.round(this.value() * 100);
         return json;
       },
       valueExtractor: function () {
@@ -267,42 +274,41 @@ ui.NewExpenseWidget.prototype.reset = function () {
 
 ui.NewExpenseWidget.prototype.submit = function () {
   var json = {};
-  for (var i = 0; i < this.orderedScreenList.length; i++) {
+  for (var i = 0; i < this.orderedScreenList.length; i++)
     this.orderedScreenList[i].serialize(json);
-  }
-  console.log(json);
 
-  //$.ajax({
-  //  type: "post",
-  //  url: "/api/category",
-  //  data: JSON.stringify({
-  //    "value": {
-  //      "name": newExpense.category,
-  //      "parentListId": 1
-  //    }
-  //  }),
-  //  success: function (data) {
-  //    $.ajax({
-  //      type: "post",
-  //      url: "/api/expense",
-  //      data: JSON.stringify({
-  //        value: {
-  //          location: newExpense.location,
-  //          description: itemDescription,
-  //          categoryId: data.expenseCategoryId,
-  //          amount: newExpense.cost,
-  //          parentListId: 1,
-  //          participants: []
-  //        }
-  //      }),
-  //      contentType: "application/json",
-  //      success: function () {
-  //        location.reload();
-  //      }
-  //    });
-  //  },
-  //  contentType: "application/json"
-  //});
+  // Save and get the category ID
+  // TODO(tlei): use the cached categories with IDs instead of making an ajax request
+  $.ajax({
+    type: "post",
+    url: "/api/category",
+    data: JSON.stringify({
+      "value": {
+        "name": json.categoryText,
+        "parentListId": this.expenseListId
+      }
+    }),
+    success: (function (data) {
+      json.parentListId = this.expenseListId;
+      json.categoryId = data.expenseCategoryId;
+      json.participants = [];
+
+      console.log(json);
+
+      $.ajax({
+        type: "post",
+        url: "/api/expense",
+        data: JSON.stringify({
+          value: json
+        }),
+        contentType: "application/json",
+        success: function () {
+          location.reload();
+        }
+      });
+    }).bind(this),
+    contentType: "application/json"
+  });
 };
 
 

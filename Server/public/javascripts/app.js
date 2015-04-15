@@ -6,7 +6,7 @@ $(document).ready(function () {
       newExpenseWidget.reset();
       expenseListWidget.show();
     }
-  });
+  }, 1);
   var expenseListWidget = new ui.ExpenseListWidget($("#expenseLog"), {
     newExpenseButtonClick: function () {
       expenseListWidget.hide();
