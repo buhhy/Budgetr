@@ -25,7 +25,7 @@ ui.NewExpenseWidgetScreen = ui.extend(
       valueHandlers = valueHandlers || {};
 
       this.valueExtractor =
-          valueHandlers.valueExtractor || function () { return this.$firstInput.val(); };
+          valueHandlers.valueExtractor || function (screen) { return screen.$firstInput.val(); };
       this.valueSerializer =
           valueHandlers.valueSerializer || function (json) { return json; };
       this.valueWriter =
@@ -60,6 +60,8 @@ ui.NewExpenseWidgetScreen = ui.extend(
       }).bind(this));
     });
 
+ui.NewExpenseWidgetScreen.prototype.setExpenseList = function (expList) {};
+
 ui.NewExpenseWidgetScreen.prototype.areKeysPressed = function (keyList, event) {
   for (var i = 0; i < keyList.length; i++) {
     if (keyList[i] === event.keyCode)
@@ -80,7 +82,7 @@ ui.NewExpenseWidgetScreen.prototype.hide = function () {
 ui.NewExpenseWidgetScreen.prototype.value = function (arg) {
   // If no argument, retrieve value
   if (arg === undefined)
-    return this.valueExtractor();
+    return this.valueExtractor(this);
   else
     this.valueWriter(this, arg);
 };
@@ -98,16 +100,15 @@ ui.NewExpenseWidgetScreen.prototype.serialize = function (json) {
 };
 
 
-
 /**
- *
+ * Expense creation input screen for the items list data.
  */
 ui.NewExpenseWidgetItemsScreen = ui.NewExpenseWidgetScreen.extend(
     function ($root, eventHooks, valueHandlers) {
       this.super.constructor.call(
           this, $root, eventHooks, $.extend({}, valueHandlers, {
-            valueExtractor: function () {
-              return this.$itemList
+            valueExtractor: function (screen) {
+              return screen.$itemList
                   .children(utils.idSelector("item"))
                   .map(function () { return $(this).text(); })
                   .toArray()
@@ -151,15 +152,95 @@ ui.NewExpenseWidgetItemsScreen = ui.NewExpenseWidgetScreen.extend(
     });
 
 
+/**
+ * Expense creation input screen for the expenses and cost structure data.
+ * @type {void|*}
+ */
+ui.NewExpenseWidgetCostScreen = ui.NewExpenseWidgetScreen.extend(
+    function ($root, eventHooks, valueHandlers) {
+      var extendedValueHandlers = $.extend({}, valueHandlers, {
+        valueSerializer: function (json) {
+          var value = this.value();
+          // Amount needs to be converted to cents
+          json.amount = Math.round(value.cost * 100);
+          // Add each participant's spending and responsibility
+          json.participants = value.members;
+          return json;
+        },
+        valueExtractor: function (screen) {
+          return {
+            cost: parseInt(this.$firstInput.val()) || 0,
+            members: screen.$costStructureContainer
+                .find(utils.idSelector("csRow"))
+                .map(function () {
+                  return {
+                    userId: parseInt($(this).attr("data-user-id")),
+                    paidAmount:
+                        parseInt($(this).find(utils.idSelector("csSpentInput")).val()) || 0,
+                    responsibleAmount:
+                        parseInt($(this).find(utils.idSelector("csResponsibleInput")).val()) || 0
+                  }
+                })
+                .toArray()
+          };
+        }
+      });
+
+      this.super.constructor.call(this, $root, eventHooks, extendedValueHandlers);
+      this.$costStructureContainer = this.$root.find(utils.idSelector("costStructureContainer"));
+    });
+
+ui.NewExpenseWidgetCostScreen.prototype.setExpenseList = function (expList) {
+  // Create the list of users
+  // TODO(tlei): selectively add and remove instead of doing bulk delete, then re-add
+  this.$costStructureContainer.empty();
+
+  var numMem = expList.members.length;
+  for (var i = 0; i < numMem; i++) {
+    var mem = expList.members[i];
+    this.$costStructureContainer.append(
+        $("<li></li>")
+            .addClass("cs-row")
+            .attr("data-user-id", mem.userId)
+            .attr("data-id", "csRow")
+            .append(
+                $("<span></span>")
+                    .addClass("cs-column")
+                    .addClass("cs-wide")
+                    .append($("<span></span>").text(mem.email)))
+            .append(
+                $("<span></span>")
+                    .addClass("cs-column")
+                    .append(
+                        $("<input/>")
+                            .addClass("cs-input")
+                            .attr("type", "number")
+                            .attr("data-id", "csSpentInput")
+                            .val(0)))
+            .append(
+                $("<span></span>")
+                    .addClass("cs-column")
+                    .append(
+                        $("<input/>")
+                            .addClass("cs-input")
+                            .attr("type", "number")
+                            .attr("data-id", "csResponsibleInput")
+                            .val(100.0 / numMem))
+                    .append("%")));
+  }
+};
+
+
+
 
 /**
  * UI widget for the new expense form stack.
  * @param $root
+ * @param currentExpenseList
  * @param eventHooks
- * @param expenseListId
  * @constructor
  */
-ui.NewExpenseWidget = function ($root, eventHooks, expenseListId) {
+ui.NewExpenseWidget = function ($root, currentExpenseList, eventHooks) {
   eventHooks = eventHooks || {};
 
   this.$root = $root;
@@ -167,9 +248,9 @@ ui.NewExpenseWidget = function ($root, eventHooks, expenseListId) {
   this.currentScreenIndex = 0;
   this.$indicatorBar = $root.find(utils.idSelector("indicatorBar"));
   this.indicatorList = this.$indicatorBar.find(utils.idSelector("indicator")).toArray();
-  this.expenseListId = expenseListId;
+  this.currentExpenseList = currentExpenseList;
 
-  var screenIds = [{
+  var screenMetadatum = [{
     id: "questionBusiness",
     clazz: ui.NewExpenseWidgetScreen,
     handlers: {
@@ -189,25 +270,15 @@ ui.NewExpenseWidget = function ($root, eventHooks, expenseListId) {
     }
   }, {
     id: "questionCost",
-    clazz: ui.NewExpenseWidgetScreen,
-    handlers: {
-      valueSerializer: function (json) {
-        // Amount needs to be converted to cents
-        json.amount = Math.round(this.value() * 100);
-        return json;
-      },
-      valueExtractor: function () {
-        return parseInt(this.$firstInput.val()) || 0;
-      }
-    }
+    clazz: ui.NewExpenseWidgetCostScreen
   }, {
     id: "questionItems",
     clazz: ui.NewExpenseWidgetItemsScreen
   }];
 
   // Select the orderedScreenList and populate the orderedScreenList list
-  for (var i = 0; i < screenIds.length; i++) {
-    var data = screenIds[i];
+  for (var i = 0; i < screenMetadatum.length; i++) {
+    var data = screenMetadatum[i];
     this.orderedScreenList[i] =
         new data.clazz(
             $root.find(utils.idSelector(data.id)),
@@ -232,6 +303,12 @@ ui.NewExpenseWidget = function ($root, eventHooks, expenseListId) {
   });
 
   this.updateIndicator();
+};
+
+ui.NewExpenseWidget.prototype.setExpenseList = function (expList) {
+  this.currentExpenseList = expList;
+  for (var i = 0; i < this.orderedScreenList.length; i++)
+    this.orderedScreenList[i].setExpenseList(expList);
 };
 
 ui.NewExpenseWidget.prototype.nextScreen = function () {
@@ -285,13 +362,12 @@ ui.NewExpenseWidget.prototype.submit = function () {
     data: JSON.stringify({
       "value": {
         "name": json.categoryText,
-        "parentListId": this.expenseListId
+        "parentListId": this.currentExpenseList.expenseListId
       }
     }),
     success: (function (data) {
-      json.parentListId = this.expenseListId;
+      json.parentListId = this.currentExpenseList.expenseListId;
       json.categoryId = data.expenseCategoryId;
-      json.participants = [];
 
       console.log(json);
 
@@ -303,7 +379,7 @@ ui.NewExpenseWidget.prototype.submit = function () {
         }),
         contentType: "application/json",
         success: function () {
-          location.reload();
+          //location.reload();
         }
       });
     }).bind(this),

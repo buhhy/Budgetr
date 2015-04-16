@@ -48,27 +48,28 @@
         </div>
       </div>
       <div class="new-expense-form">
-        <div class="bus-question" data-id="questionBusiness">
+        <div class="question-box bus-question" data-id="questionBusiness">
           <h2 class="new-expense-question">Where did you make the expense?</h2>
-          <input class="bus-input" id="busNameInput" type="text"
+          <input class="main-input bus-input" type="text"
               placeholder="Business name" data-first-input data-last-input>
           <h3 class="instruction">PRESS ENTER TO CONTINUE</h3>
         </div>
-        <div class="cat-question hidden" data-id="questionCategory">
+        <div class="question-box cat-question hidden" data-id="questionCategory">
           <h2 class="new-expense-question">Which category does the expense belong in?</h2>
-          <input class="cat-input" id="catInput" type="text"
+          <input class="main-input cat-input" type="text"
               placeholder="Add a category" data-first-input data-last-input>
           <h3 class="instruction">PRESS ENTER TO CONTINUE</h3>
         </div>
-        <div class="cost-question hidden" data-id="questionCost">
+        <div class="question-box cost-question hidden" data-id="questionCost">
           <h2 class="new-expense-question">How much was the expense?</h2>
-          <input class="cost-input" id="costInput" type="text"
+          <input class="main-input cost-input" type="number"
               placeholder="Enter cost in dollars" data-first-input data-last-input>
           <h3 class="instruction">PRESS ENTER TO CONTINUE</h3>
+          <ul class="cs-inputs-container" data-id="costStructureContainer"></ul>
         </div>
-        <div class="items-question hidden" data-id="questionItems">
+        <div class="question-box items-question hidden" data-id="questionItems">
           <h2 class="new-expense-question">What items did you purchase?</h2>
-          <input class="items-input" data-id="itemInput" type="text"
+          <input class="main-input items-input" data-id="itemInput" type="text"
               placeholder="Enter item" data-first-input data-submit-input>
           <h3 class="instruction">PRESS ENTER TO ADD LIST</h3>
           <ul class="item-list" data-id="itemList">

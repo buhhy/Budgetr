@@ -13,7 +13,10 @@ $(document).ready(function () {
       newExpenseWidget.show();
     }
   });
-  api.getExpenseListById(1, expenseListWidget.setExpenseList.bind(expenseListWidget));
+  api.getExpenseListById(1, function (expList) {
+    newExpenseWidget.setExpenseList(expList);
+    expenseListWidget.setExpenseList(expList);
+  });
 });
 
 // Expense class
@@ -26,7 +29,9 @@ models.Expense = function (location, category, cost, items, createDate) {
 };
 
 // Expense list class
-models.ExpenseList = function (listName, description, expenses, createDate, members) {
+models.ExpenseList = function (
+    expenseListId, listName, description, expenses, createDate, members) {
+  this.expenseListId = expenseListId;
   this.listName = listName;
   this.description = description;
   this.expenses = expenses;
@@ -57,5 +62,6 @@ api.parseExpenseListJson = function (json) {
             exp.description.split(","), exp.createDate));
   }
   return new models.ExpenseList(
-      json.name, json.description, expenses, new Date(json.createDate), json.members);
+      json.expenseListId, json.name, json.description, expenses, new Date(json.createDate),
+      json.members);
 };
