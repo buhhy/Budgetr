@@ -207,7 +207,7 @@ ui.NewExpenseWidgetCostScreen.prototype.setExpenseList = function (expList) {
                 $("<span></span>")
                     .addClass("cs-column")
                     .addClass("cs-wide")
-                    .append($("<span></span>").text(mem.email)))
+                    .append($("<span></span>").text(mem.firstName)))
             .append(
                 $("<span></span>")
                     .addClass("cs-column")

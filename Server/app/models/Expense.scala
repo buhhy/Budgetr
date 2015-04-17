@@ -53,19 +53,43 @@ object Expense {
     JsonReaderBase.apply { (loc, desc, pid, ecid, am) => Expense(loc, desc, pid, userId, ecid, am) }
 
   def createExpense(
-      newList: Expense,
+      newExpense: Expense,
       participantProvider: Long => Seq[UserExpenseJoin]):
   ResultWithError[InsertedExpenseWithAllData] = {
 
-    DBExpense.insert(newList) match {
+    DBExpense.insert(newExpense) match {
       case Left(insertedList) =>
         val parts = participantProvider(insertedList.expId)
-        // If no participants are provided, then add the expense list creator as a default
-        // participant that paid for the full amount and is responsible for the full amount.
         val filledParts = if (parts.isEmpty) {
-          Seq(new UserExpenseJoin(newList.creatorUserId, insertedList.expId, 1.0, 1.0))
+          // If no participants are provided, then add the expense list creator as a default
+          // participant that paid for the full amount and is responsible for the full amount.
+          Seq(new UserExpenseJoin(newExpense.creatorUserId, insertedList.expId, 1.0, 1.0))
         } else {
-          parts
+          // Verify that the input spent values and the responsible amount adds up to 100%. If not,
+          // normalize the values.
+
+          val (totalSpent, totalResponsible) = parts.foldLeft((0.0, 0.0)) {
+            case ((spentCount, responsibleCount), part) =>
+              (spentCount + part.paidAmount, responsibleCount + part.responsibleAmount)
+          }
+
+          if (totalSpent == 1.0 && totalResponsible == 1.0) {
+            parts
+          } else {
+            // Handle case when the totals are 0, we don't want DBZ
+            val normalizer = (value: Double, total: Double) => {
+              if (total == 0.0)
+                1.0 / parts.size
+              else
+                value / total
+            }
+            // Normalize
+            parts.map { part =>
+              part.copy(
+                paidAmount = normalizer(part.paidAmount, totalSpent),
+                responsibleAmount = normalizer(part.responsibleAmount, totalResponsible))
+            }
+          }
         }
 
         DBUserExpenseJoin.insertAll(filledParts) match {

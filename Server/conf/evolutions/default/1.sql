@@ -2,10 +2,12 @@
 
 CREATE TABLE user(
   user_id BIGINT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+  first_name VARCHAR(64) NOT NULL,
+  last_name VARCHAR(64) NOT NULL,
   phone VARCHAR(32) NOT NULL,
   email VARCHAR(512) NOT NULL,
   password VARCHAR(512) NOT NULL,
-  create_date DATETIME not NULL
+  create_date DATETIME NOT NULL
 );
 
 CREATE TABLE expense_list(
@@ -43,7 +45,7 @@ CREATE TABLE expense(
   parent_ref_id BIGINT NOT NULL,
   creator_ref_id BIGINT NOT NULL,
   category_ref_id BIGINT NOT NULL,
-  amount INT NOT NULL,
+  amount INT NOT NULL,                  # cents
   create_date DATETIME NOT NULL,
   FOREIGN KEY (creator_ref_id) REFERENCES user(user_id) ON DELETE CASCADE,
   FOREIGN KEY (parent_ref_id) REFERENCES expense_list(explist_id) ON DELETE CASCADE,
@@ -53,8 +55,8 @@ CREATE TABLE expense(
 CREATE TABLE user_expense_join(
   user_ref_id BIGINT NOT NULL,
   exp_ref_id BIGINT NOT NULL,
-  paid_amount DOUBLE NOT NULL,
-  responsible_amount DOUBLE NOT NULL,
+  paid_amount DOUBLE NOT NULL,          # percent
+  responsible_amount DOUBLE NOT NULL,   # percent
   create_date DATETIME NOT NULL,
   PRIMARY KEY (user_ref_id, exp_ref_id),
   FOREIGN KEY (user_ref_id) REFERENCES user(user_id) ON DELETE CASCADE,

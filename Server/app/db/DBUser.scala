@@ -13,23 +13,28 @@ import db.common.{AnormInsertHelper, AnormHelper}
 object DBUser {
   private[db] val TableName = "user"
   private[db] val C_ID = "user_id"
+  private[db] val C_FirstName = "first_name"
+  private[db] val C_LastName = "last_name"
   private[db] val C_Phone = "phone"
   private[db] val C_Email = "email"
   private[db] val C_Password = "password"
-  private[db] val C_CDate = "create_date"
+  private[db] val C_CreateDate = "create_date"
 
   private val helper = new AnormHelper(TableName)
-  private val insertHelper = AnormInsertHelper(TableName, C_CDate)
+  private val insertHelper = AnormInsertHelper(TableName, C_CreateDate)
 
   val UserParser =
-    (long(C_ID) ~ str(C_Phone) ~ str(C_Email) ~ str(C_Password) ~ date(C_CDate)).map {
-      case id ~ phone ~ email ~ pass ~ date =>
-        InsertedUser(id, new DateTime(date), User(phone, email, pass))
+    (long(C_ID) ~ str(C_FirstName) ~ str(C_LastName) ~ str(C_Phone)~ str(C_Email)
+        ~ str(C_Password) ~ date(C_CreateDate)).map {
+      case id ~ fname ~ lname ~ phone ~ email ~ pass ~ date =>
+        InsertedUser(id, new DateTime(date), User(fname, lname, phone, email, pass))
     }
 
 
   def toData(user: User): Seq[NamedParameter] = {
     Seq(
+      C_FirstName -> user.firstName,
+      C_LastName -> user.lastName,
       C_Phone -> user.phone,
       C_Email -> user.email,
       C_Password -> user.password)
@@ -38,7 +43,7 @@ object DBUser {
   def toData(user: InsertedUser): Seq[NamedParameter] = {
     toData(user.user) ++ Seq[NamedParameter](
       idColumn(user.userId),
-      C_CDate -> user.createDate)
+      C_CreateDate -> user.createDate)
   }
 
   def idColumn(id: Long): NamedParameter = NamedParameter(C_ID, id)
