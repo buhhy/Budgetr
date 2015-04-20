@@ -22,6 +22,18 @@ var utils = {
       str += array[i];
     }
     return str;
+  },
+  parseFloatDefault: function (str, def) {
+    var p = parseFloat(str);
+    if (isNaN(p))
+      return def;
+    return p;
+  },
+  /**
+   * Compare with floating point error
+   */
+  eqE: function (v1, v2) {
+    return Math.abs(v1 - v2) <= 1E-5;
   }
 };
 var models = {};

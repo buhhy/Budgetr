@@ -27,11 +27,11 @@ ui.NewExpenseWidgetScreen = ui.extend(
       this.valueExtractor =
           valueHandlers.valueExtractor || function (screen) { return screen.$firstInput.val(); };
       this.valueSerializer =
-          valueHandlers.valueSerializer || function (json) { return json; };
+          valueHandlers.valueSerializer || function (screen, json) { return json; };
       this.valueWriter =
-          valueHandlers.valueWriter || function (value) { this.$firstInput.val(value) };
+          valueHandlers.valueWriter || function (screen, value) { screen.$firstInput.val(value) };
       this.valueClear =
-          valueHandlers.valueClear || function () { this.$firstInput.val("") };
+          valueHandlers.valueClear || function (screen) { screen.$firstInput.val("") };
 
       this.$root = $root;
       this.$firstInput = $root.find("[data-first-input]");
@@ -96,7 +96,7 @@ ui.NewExpenseWidgetScreen.prototype.clear = function () {
 };
 
 ui.NewExpenseWidgetScreen.prototype.serialize = function (json) {
-  return this.valueSerializer(json);
+  return this.valueSerializer(this, json);
 };
 
 
@@ -114,12 +114,12 @@ ui.NewExpenseWidgetItemsScreen = ui.NewExpenseWidgetScreen.extend(
                   .toArray()
                   .reverse();
             },
-            valueClear: function () {
-              this.$itemList.children().detach();
-              this.$itemInput.val("");
+            valueClear: function (screen) {
+              screen.$itemList.children().detach();
+              screen.$itemInput.val("");
             },
-            valueSerializer: function (json) {
-              json.description = utils.join(this.value(), ',');
+            valueSerializer: function (screen, json) {
+              json.description = utils.join(screen.value(), ',');
               return json;
             }
           }));
@@ -159,8 +159,8 @@ ui.NewExpenseWidgetItemsScreen = ui.NewExpenseWidgetScreen.extend(
 ui.NewExpenseWidgetCostScreen = ui.NewExpenseWidgetScreen.extend(
     function ($root, eventHooks, valueHandlers) {
       var extendedValueHandlers = $.extend({}, valueHandlers, {
-        valueSerializer: function (json) {
-          var value = this.value();
+        valueSerializer: function (screen, json) {
+          var value = screen.value();
           // Amount needs to be converted to cents
           json.amount = Math.round(value.cost * 100);
           // Add each participant's spending and responsibility
@@ -169,16 +169,18 @@ ui.NewExpenseWidgetCostScreen = ui.NewExpenseWidgetScreen.extend(
         },
         valueExtractor: function (screen) {
           return {
-            cost: parseInt(this.$firstInput.val()) || 0,
+            cost: utils.parseFloatDefault(screen.$firstInput.val(), 0),
             members: screen.$costStructureContainer
                 .find(utils.idSelector("csRow"))
                 .map(function () {
                   return {
                     userId: parseInt($(this).attr("data-user-id")),
                     paidAmount:
-                        parseInt($(this).find(utils.idSelector("csSpentInput")).val()) || 0,
+                        utils.parseFloatDefault(
+                            $(this).find(utils.idSelector("csSpentInput")).val(), 0),
                     responsibleAmount:
-                        parseInt($(this).find(utils.idSelector("csResponsibleInput")).val()) || 0
+                        utils.parseFloatDefault(
+                            $(this).find(utils.idSelector("csResponsibleInput")).val(), 0)
                   }
                 })
                 .toArray()
@@ -196,6 +198,18 @@ ui.NewExpenseWidgetCostScreen.prototype.setExpenseList = function (expList) {
   this.$costStructureContainer.empty();
 
   var numMem = expList.members.length;
+  var self = this;
+
+  var findOtherElems = function ($elem, dataId) {
+    var index = $elem.attr("data-index");
+    // Find other inputs that aren't $elem
+    return self.$root
+        .find(utils.idSelector(dataId))
+        .filter(function () {
+          return $(this).attr("data-index") !== index;
+        })
+  };
+
   for (var i = 0; i < numMem; i++) {
     var mem = expList.members[i];
     this.$costStructureContainer.append(
@@ -215,7 +229,14 @@ ui.NewExpenseWidgetCostScreen.prototype.setExpenseList = function (expList) {
                         $("<input/>")
                             .addClass("cs-input")
                             .attr("type", "number")
+                            .attr("data-index", i)
                             .attr("data-id", "csSpentInput")
+                            .blur(function () {
+                              self.normalizeInputFields(
+                                  $(this),
+                                  findOtherElems($(this), "csSpentInput"),
+                                  utils.parseFloatDefault(self.$firstInput.val(), 0));
+                            })
                             .val(0)))
             .append(
                 $("<span></span>")
@@ -224,11 +245,56 @@ ui.NewExpenseWidgetCostScreen.prototype.setExpenseList = function (expList) {
                         $("<input/>")
                             .addClass("cs-input")
                             .attr("type", "number")
+                            .attr("data-index", i)
                             .attr("data-id", "csResponsibleInput")
+                            .blur(function () {
+                              self.normalizeInputFields(
+                                  $(this),
+                                  findOtherElems($(this), "csResponsibleInput"),
+                                  100);
+                            })
                             .val(100.0 / numMem))
                     .append("%")));
   }
 };
+
+ui.NewExpenseWidgetCostScreen.prototype.normalizeInputFields =
+    function ($elem, $otherInputs, expectedValue) {
+      var value = utils.parseFloatDefault($elem.val(), -1);
+
+      // Check for invalid inputs
+      if (value < 0 || value > expectedValue) {
+        value = expectedValue;
+        $elem.val(value);
+      }
+
+      // Find sum of other inputs
+      var sum = _.reduce(
+          $otherInputs.map(function () {
+            return parseFloat($(this).val())
+          }).toArray(),
+          function (memo, num) {
+            return memo + num;
+          }, 0);
+
+      var expectedSum = expectedValue - value;
+      var normalizeFn;
+
+      if (utils.eqE(sum, 0)) {
+        var val = expectedSum / $otherInputs.size();
+        normalizeFn = function () {
+          $(this).val(val);
+        };
+      } else {
+        var mult = expectedSum / sum;
+        normalizeFn = function () {
+          var $this = $(this);
+          $this.val(utils.parseFloatDefault($this.val(), 0) * mult);
+        };
+      }
+      // Normalize values
+      $otherInputs.each(normalizeFn);
+    };
 
 
 
@@ -254,8 +320,8 @@ ui.NewExpenseWidget = function ($root, currentExpenseList, eventHooks) {
     id: "questionBusiness",
     clazz: ui.NewExpenseWidgetScreen,
     handlers: {
-      valueSerializer: function (json) {
-        json.location = this.value();
+      valueSerializer: function (screen, json) {
+        json.location = screen.value();
         return json;
       }
     }
@@ -263,8 +329,8 @@ ui.NewExpenseWidget = function ($root, currentExpenseList, eventHooks) {
     id: "questionCategory",
     clazz: ui.NewExpenseWidgetScreen,
     handlers: {
-      valueSerializer: function (json) {
-        json.categoryText = this.value();
+      valueSerializer: function (screen, json) {
+        json.categoryText = screen.value();
         return json;
       }
     }

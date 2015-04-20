@@ -35,7 +35,8 @@ CREATE TABLE expense_category(
   creator_ref_id BIGINT NOT NULL,
   explist_ref_id BIGINT NOT NULL,
   FOREIGN KEY (creator_ref_id) REFERENCES user(user_id) ON DELETE CASCADE,
-  FOREIGN KEY (explist_ref_id) REFERENCES expense_list(explist_id) ON DELETE CASCADE
+  FOREIGN KEY (explist_ref_id) REFERENCES expense_list(explist_id) ON DELETE CASCADE,
+  UNIQUE INDEX (cat_name, explist_ref_id)
 );
 
 CREATE TABLE expense(

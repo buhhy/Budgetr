@@ -2,17 +2,27 @@
 <!DOCTYPE html>
 
 <html>
-    <head></head>
-    <body>
-        <div>
-            @messages.map { msg =>
-                <span>@msg</span>
-            }
-        </div>
-        <form action="@routes.Application.authenticate()" method="post">
-            <label for="phone">Phone #: </label><input type="tel" name="phone"/>
-            <label for="password">Password: </label><input type="password" name="password"/>
-            <input type="submit" value="login"/>
-        </form>
-    </body>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Log in to Budgie</title>
+  </head>
+  <body>
+    <h1>Log in to Budgie</h1>
+    <div>
+      @messages.map { msg =>
+        <span>@msg</span>
+      }
+    </div>
+    <form action="@routes.Application.authenticate()" method="post">
+      <div>
+        <label for="phone">Phone #: </label>
+        <input id="phone" type="tel" name="phone"/>
+      </div>
+      <div>
+        <label for="password">Password: </label>
+        <input id="password" type="password" name="password"/>
+      </div>
+      <input type="submit" value="login"/>
+    </form>
+  </body>
 </html>
