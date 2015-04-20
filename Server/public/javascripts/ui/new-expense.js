@@ -100,13 +100,24 @@ ui.NewExpenseWidgetScreen.prototype.serialize = function (json) {
 };
 
 
+
+
 /**
  * Expense creation input screen for the items list data.
  */
 ui.NewExpenseWidgetItemsScreen = ui.NewExpenseWidgetScreen.extend(
     function ($root, eventHooks, valueHandlers) {
+      var self = this;
       this.super.constructor.call(
-          this, $root, eventHooks, $.extend({}, valueHandlers, {
+          this, $root,
+          $.extend({}, eventHooks, {
+            submit: function (screen) {
+              self.addNewItem(self.$itemInput.val());
+              if (eventHooks.submit)
+                eventHooks.submit(screen)
+            }
+          }),
+          $.extend({}, valueHandlers, {
             valueExtractor: function (screen) {
               return screen.$itemList
                   .children(utils.idSelector("item"))
@@ -128,28 +139,29 @@ ui.NewExpenseWidgetItemsScreen = ui.NewExpenseWidgetScreen.extend(
       this.$itemInput = this.$root.find(utils.idSelector("itemInput"));
       this.$itemList = this.$root.find(utils.idSelector("itemList"));
 
-      this.$itemInput.on("keyup", (function (event) {
-        if (this.areKeysPressed(this.delimiterKeys, event)) {
+      this.$itemInput.on("keyup", function (event) {
+        if (self.areKeysPressed(self.delimiterKeys, event)) {
           // Add a new item when the delimiter is pressed
           event.preventDefault();
-          var value = this.$itemInput.val();
           // Remove the last character
-          value = value.substr(0, value.length - 1).trim();
-
-          if (value) {
-            var $newElem = $("<li></li>").text(value).attr("data-id", "item");
-            this.$itemList.prepend($newElem);
-            this.$itemInput.val("");
-          }
-        } else if (this.areKeysPressed(this.deleteKeys, event)) {
+          self.addNewItem(self.$itemInput.val().substr(0, value.length - 1).trim());
+        } else if (self.areKeysPressed(self.deleteKeys, event)) {
           // If the input field is empty, then delete the last item inserted
-          if (!this.$itemInput.val()) {
+          if (!self.$itemInput.val()) {
             event.preventDefault();
-            this.$itemList.children().eq(0).detach();
+            self.$itemList.children().eq(0).detach();
           }
         }
-      }).bind(this));
+      });
     });
+
+ui.NewExpenseWidgetItemsScreen.prototype.addNewItem = function (value) {
+  if (value) {
+    var $newElem = $("<li></li>").text(value).attr("data-id", "item");
+    this.$itemList.prepend($newElem);
+    this.$itemInput.val("");
+  }
+};
 
 
 /**
@@ -445,7 +457,7 @@ ui.NewExpenseWidget.prototype.submit = function () {
         }),
         contentType: "application/json",
         success: function () {
-          //location.reload();
+          location.reload();
         }
       });
     }).bind(this),
