@@ -21,7 +21,8 @@ ui.extend = function (constructor) {
  */
 ui.NewExpenseWidgetScreen = ui.extend(
     function ($root, eventHooks, valueHandlers) {
-      eventHooks = eventHooks || {};
+      var self = this;
+      this.eventHooks = eventHooks || {};
       valueHandlers = valueHandlers || {};
 
       this.valueExtractor =
@@ -42,22 +43,22 @@ ui.NewExpenseWidgetScreen = ui.extend(
       // Assign the next screen keypress handlers
       this.$lastInput.on("keypress", function (event) {
         // Enter key pressed
-        if (event.keyCode === 13 && eventHooks.next)
-          eventHooks.next();
+        if (event.keyCode === 13 && self.eventHooks.next)
+          self.eventHooks.next();
       });
 
       // Assign the submit handlers if any
-      this.$submitInput.on("keypress", (function (event) {
+      this.$submitInput.on("keypress", function (event) {
         // Enter key pressed
-        if (event.keyCode === 13 && eventHooks.submit)
-          eventHooks.submit(this);
-      }).bind(this));
+        if (event.keyCode === 13 && self.eventHooks.submit)
+          self.eventHooks.submit(self);
+      });
 
-      this.$submitButton.on("click", (function (event) {
+      this.$submitButton.on("click", function (event) {
         event.preventDefault();
-        if (eventHooks.submit)
-          eventHooks.submit(this);
-      }).bind(this));
+        if (self.eventHooks.submit)
+          self.eventHooks.submit(self);
+      });
     });
 
 ui.NewExpenseWidgetScreen.prototype.setExpenseList = function (expList) {};
@@ -202,6 +203,15 @@ ui.NewExpenseWidgetCostScreen = ui.NewExpenseWidgetScreen.extend(
 
       this.super.constructor.call(this, $root, eventHooks, extendedValueHandlers);
       this.$costStructureContainer = this.$root.find(utils.idSelector("costStructureContainer"));
+      var self = this;
+
+      this.$firstInput.blur(function () {
+        var value = $(this).val();
+        self.normalizeInputFields(
+            $(), self.$root.find(utils.idSelector("csSpentInput")), value);
+        self.normalizeInputFields(
+            $(), self.$root.find(utils.idSelector("csResponsibleInput")), 100);
+      });
     });
 
 ui.NewExpenseWidgetCostScreen.prototype.setExpenseList = function (expList) {
@@ -243,6 +253,11 @@ ui.NewExpenseWidgetCostScreen.prototype.setExpenseList = function (expList) {
                             .attr("type", "number")
                             .attr("data-index", i)
                             .attr("data-id", "csSpentInput")
+                            .on("keyup", function (event) {
+                              // Enter key pressed
+                              if (event.keyCode === 13 && self.eventHooks.next)
+                                self.eventHooks.next(this);
+                            })
                             .blur(function () {
                               self.normalizeInputFields(
                                   $(this),
@@ -259,6 +274,11 @@ ui.NewExpenseWidgetCostScreen.prototype.setExpenseList = function (expList) {
                             .attr("type", "number")
                             .attr("data-index", i)
                             .attr("data-id", "csResponsibleInput")
+                            .on("keyup", function (event) {
+                              // Enter key pressed
+                              if (event.keyCode === 13 && self.eventHooks.next)
+                                self.eventHooks.next(this);
+                            })
                             .blur(function () {
                               self.normalizeInputFields(
                                   $(this),
@@ -272,7 +292,11 @@ ui.NewExpenseWidgetCostScreen.prototype.setExpenseList = function (expList) {
 
 ui.NewExpenseWidgetCostScreen.prototype.normalizeInputFields =
     function ($elem, $otherInputs, expectedValue) {
-      var value = utils.parseFloatDefault($elem.val(), -1);
+      var value = 0;
+
+      // If no input element is specified, then assume the default value is 0
+      if ($elem.size() > 0)
+        value = utils.parseFloatDefault($elem.val(), -1);
 
       // Check for invalid inputs
       if (value < 0 || value > expectedValue) {
