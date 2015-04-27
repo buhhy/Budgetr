@@ -1,3 +1,5 @@
+@import "mixins.less";
+
 html {
   background-color: #EEFFF5;
   height: 100%;
@@ -349,7 +351,7 @@ section {
       }
 
       .main-input {
-        width: 99%;
+        width: 100%;
         max-width: 25em;
         font-size: 2em;
       }
@@ -363,6 +365,25 @@ section {
   }
 }
 
+.tt-menu {
+  width: 100%;
+  background-color: #DEEFE5;
+
+  .tt-suggestion {
+    font-size: 1.1em;
+    width: 100%;
+    cursor: pointer;
+    padding: 0.5em;
+
+    .box-sizing(border-box);
+    .transition(all 200ms ease);
+
+    &.tt-cursor, &:hover {
+      background-color: #F2FFF7;
+    }
+  }
+}
+
 input {
   border-style: none;
   border-bottom: 0.15em solid #289E7F;
@@ -370,6 +391,8 @@ input {
   font-family: "Andes Rounded", sans-serif;
   color: #289E7F;
   padding-left: 0.2em;
+
+  .box-sizing(border-box);
 
   &::-webkit-input-placeholder {
     color: #98D8C5;

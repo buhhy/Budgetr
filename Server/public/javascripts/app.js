@@ -6,7 +6,7 @@ $(document).ready(function () {
       newExpenseWidget.reset();
       expenseListWidget.show();
     }
-  }, 1);
+  });
   var expenseListWidget = new ui.ExpenseListWidget($("#expenseLog"), {
     newExpenseButtonClick: function () {
       expenseListWidget.hide();
@@ -30,13 +30,14 @@ models.Expense = function (location, category, cost, items, createDate) {
 
 // Expense list class
 models.ExpenseList = function (
-    expenseListId, listName, description, expenses, createDate, members) {
+    expenseListId, listName, description, expenses, createDate, members, categories) {
   this.expenseListId = expenseListId;
   this.listName = listName;
   this.description = description;
   this.expenses = expenses;
   this.createDate = createDate;
   this.members = members;
+  this.categories = categories;
 };
 
 api.getExpenseListById = function (id, callback) {
@@ -63,5 +64,5 @@ api.parseExpenseListJson = function (json) {
   }
   return new models.ExpenseList(
       json.expenseListId, json.name, json.description, expenses, new Date(json.createDate),
-      json.members);
+      json.members, json.categories);
 };

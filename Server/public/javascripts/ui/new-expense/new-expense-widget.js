@@ -1,104 +1,53 @@
 /**
- * Created by Terry Lei on 5/4/2015.
+ * @author tlei (Terence Lei)
  */
-
-// Makes the provided class a subclass of another
-ui.extend = function (constructor) {
-  var _super = this.prototype || Object.prototype;
-  constructor.prototype = Object.create(_super);
-  constructor.prototype.constructor = constructor;
-  constructor.prototype.super = _super;
-  constructor.extend = ui.extend;
-  return constructor;
-};
 
 /**
- * UI for each page within the new expense stack widget.
- * @param $root
- * @param eventHooks
- * @param valueHandlers
- * @constructor
+ * Expense creation input screen for the category input.
  */
-ui.NewExpenseWidgetScreen = ui.extend(
+ui.NewExpenseWidgetCategoryScreen = ui.NewExpenseWidgetScreen.extend(
     function ($root, eventHooks, valueHandlers) {
       var self = this;
-      this.eventHooks = eventHooks || {};
-      valueHandlers = valueHandlers || {};
+      this.super.constructor.call(this, $root, eventHooks,
+          $.extend({}, valueHandlers, {
+            valueSerializer: function (screen, json) {
+              json.categoryText = screen.value();
+              return json;
+            }
+          }));
 
-      this.valueExtractor =
-          valueHandlers.valueExtractor || function (screen) { return screen.$firstInput.val(); };
-      this.valueSerializer =
-          valueHandlers.valueSerializer || function (screen, json) { return json; };
-      this.valueWriter =
-          valueHandlers.valueWriter || function (screen, value) { screen.$firstInput.val(value) };
-      this.valueClear =
-          valueHandlers.valueClear || function (screen) { screen.$firstInput.val("") };
+      this.$firstInput.typeahead({
+        hint: true,
+        highlight: true,
+        minLength: 1
+      }, {
+        name: "categories",
+        source: function (q, cb) {
+          // regex used to determine if a string contains the substring `q`
+          var substrRegex = new RegExp(q, 'i');
 
-      this.$root = $root;
-      this.$firstInput = $root.find("[data-first-input]");
-      this.$lastInput = $root.find("[data-last-input]");
-      this.$submitInput = $root.find("[data-submit-input]");
-      this.$submitButton = $root.find("[data-submit-button]");
+          var categories = [];
+          if (self.expList)
+            categories = self.expList.categories;
 
-      // Assign the next screen keypress handlers
-      this.$lastInput.on("keypress", function (event) {
-        // Enter key pressed
-        if (event.keyCode === 13 && self.eventHooks.next)
-          self.eventHooks.next();
-      });
+          // iterate through the pool of strings and filter out any strings that  do not contain the
+          // substring `q`
+          var matches = _.map(_.filter(categories, function (category) {
+            return substrRegex.test(category.name);
+          }), function (category) {
+            return category.name;
+          });
 
-      // Assign the submit handlers if any
-      this.$submitInput.on("keypress", function (event) {
-        // Enter key pressed
-        if (event.keyCode === 13 && self.eventHooks.submit)
-          self.eventHooks.submit(self);
-      });
-
-      this.$submitButton.on("click", function (event) {
-        event.preventDefault();
-        if (self.eventHooks.submit)
-          self.eventHooks.submit(self);
+          cb(matches);
+        }
       });
     });
 
-ui.NewExpenseWidgetScreen.prototype.setExpenseList = function (expList) {};
-
-ui.NewExpenseWidgetScreen.prototype.areKeysPressed = function (keyList, event) {
-  for (var i = 0; i < keyList.length; i++) {
-    if (keyList[i] === event.keyCode)
-      return true;
-  }
-  return false;
+ui.NewExpenseWidgetCategoryScreen.prototype.setExpenseList = function (expList) {
+  this.expList = expList;
 };
 
-ui.NewExpenseWidgetScreen.prototype.show = function () {
-  this.$root.removeClass('hidden');
-  this.focus();
-};
 
-ui.NewExpenseWidgetScreen.prototype.hide = function () {
-  this.$root.addClass('hidden');
-};
-
-ui.NewExpenseWidgetScreen.prototype.value = function (arg) {
-  // If no argument, retrieve value
-  if (arg === undefined)
-    return this.valueExtractor(this);
-  else
-    this.valueWriter(this, arg);
-};
-
-ui.NewExpenseWidgetScreen.prototype.focus = function () {
-  this.$firstInput.focus();
-};
-
-ui.NewExpenseWidgetScreen.prototype.clear = function () {
-  this.valueClear(this);
-};
-
-ui.NewExpenseWidgetScreen.prototype.serialize = function (json) {
-  return this.valueSerializer(this, json);
-};
 
 
 
@@ -163,6 +112,11 @@ ui.NewExpenseWidgetItemsScreen.prototype.addNewItem = function (value) {
     this.$itemInput.val("");
   }
 };
+
+
+
+
+
 
 
 /**
@@ -335,6 +289,7 @@ ui.NewExpenseWidgetCostScreen.prototype.normalizeInputFields =
 
 
 
+
 /**
  * UI widget for the new expense form stack.
  * @param $root
@@ -342,7 +297,7 @@ ui.NewExpenseWidgetCostScreen.prototype.normalizeInputFields =
  * @param eventHooks
  * @constructor
  */
-ui.NewExpenseWidget = function ($root, currentExpenseList, eventHooks) {
+ui.NewExpenseWidget = function ($root, eventHooks, currentExpenseList) {
   eventHooks = eventHooks || {};
 
   this.$root = $root;
@@ -363,13 +318,7 @@ ui.NewExpenseWidget = function ($root, currentExpenseList, eventHooks) {
     }
   }, {
     id: "questionCategory",
-    clazz: ui.NewExpenseWidgetScreen,
-    handlers: {
-      valueSerializer: function (screen, json) {
-        json.categoryText = screen.value();
-        return json;
-      }
-    }
+    clazz: ui.NewExpenseWidgetCategoryScreen
   }, {
     id: "questionCost",
     clazz: ui.NewExpenseWidgetCostScreen

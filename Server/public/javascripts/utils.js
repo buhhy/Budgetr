@@ -1,5 +1,5 @@
 /**
- * Created by Terry Lei on 8/4/2015.
+ * @author tlei (Terence Lei)
  */
 
 var ui = {};
