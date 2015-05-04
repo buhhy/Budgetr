@@ -1,16 +1,22 @@
 @import "mixins.less";
 
 html {
+  font-size: 14px;
   background-color: #EEFFF5;
   height: 100%;
+  width: 100%;
+  padding: 0.75em 0.5em;
+
+  .box-sizing(border-box);
 }
 
 body {
   font-family: "Andes Rounded", sans-serif;
-  font-size: 14px;
-  margin: 0.7em 0.5em;
   color: #289E7F;
   letter-spacing: 0.05em;
+  height: 100%;
+
+  .box-sizing(border-box);
 }
 
 div.header {
@@ -19,7 +25,8 @@ div.header {
   background-color: #EEFFF5;
   width: 98%;
   padding: 0.7em 0;
-  display:table;
+  display: table;
+  z-index: 2;   // in case the content is positioned as well
 
   h1 {
     color: #98D8C5;
@@ -172,11 +179,11 @@ div.action {
 
 section {
   &.expense-log-screen {
-
+    height: 100%;
+    padding-top: 1em;
     padding-bottom: 8em;
 
-    // Toggle expense log
-    //.hidden;
+    .box-sizing(border-box);
 
     h2 {
       color: #289E7F;
@@ -186,7 +193,7 @@ section {
       font-size: 0.9em;
       border-bottom: 2.5px solid #289E7F;
       padding: 0.5em;
-      margin: 3em 0 0.7em;
+      margin: 1em 0 0.7em;
       text-transform: uppercase;
     }
 
@@ -261,6 +268,18 @@ section {
   }
 
   &.new-expense {
+    height: 100%;
+    padding-top: 5em;
+
+    .box-sizing(border-box);
+
+    .new-expense-form {
+      height: 100%;
+      position: relative;
+
+      .box-sizing(border-box);
+    }
+
     .topbar {
       margin: 0 0 0.5em;
     }
@@ -302,13 +321,19 @@ section {
     }
 
     .question-box {
-      left: 0;
+      min-height: 65%;
+
+      &:last-child {
+        // we want the last question box, when scrolled to the bottom, to be positioned at the top
+        // of the page rather than at the middle of the page
+        min-height: 100%;
+        margin-bottom: 0.75em; // emulates the bottom margin on html
+      }
 
       .new-expense-question {
         font-size: 3em;
         font-weight: 400;
         color: #2FB28C;
-        margin: 2em 0 0.5em;
         line-height: 1.2em;
       }
 
@@ -365,21 +390,24 @@ section {
   }
 }
 
+// typeahead dropdown menu
 .tt-menu {
   width: 100%;
   background-color: #DEEFE5;
 
   .tt-suggestion {
-    font-size: 1.1em;
+    font-size: 1.4em;
     width: 100%;
     cursor: pointer;
-    padding: 0.5em;
+    padding: 0.6em;
+    color: #8FB59F;
 
     .box-sizing(border-box);
     .transition(all 200ms ease);
 
     &.tt-cursor, &:hover {
       background-color: #F2FFF7;
+      color: #61BAA3;
     }
   }
 }
@@ -404,6 +432,11 @@ input {
 
   &:focus {
     outline: 0;
+  }
+
+  // typeahead hint
+  &.tt-hint {
+    color: #A8BDB7;
   }
 }
 

@@ -39,6 +39,7 @@ ui.NewExpenseWidgetScreen = ui.extend(
       this.$lastInput = $root.find("[data-last-input]");
       this.$submitInput = $root.find("[data-submit-input]");
       this.$submitButton = $root.find("[data-submit-button]");
+      this.$allInputs = $root.find("input");
 
       // Assign the next screen keypress handlers
       this.$lastInput.on("keypress", function (event) {
@@ -71,15 +72,6 @@ ui.NewExpenseWidgetScreen.prototype.areKeysPressed = function (keyList, event) {
   return false;
 };
 
-ui.NewExpenseWidgetScreen.prototype.show = function () {
-  this.$root.removeClass('hidden');
-  this.focus();
-};
-
-ui.NewExpenseWidgetScreen.prototype.hide = function () {
-  this.$root.addClass('hidden');
-};
-
 ui.NewExpenseWidgetScreen.prototype.value = function (arg) {
   // If no argument, retrieve value
   if (arg === undefined)
@@ -88,7 +80,22 @@ ui.NewExpenseWidgetScreen.prototype.value = function (arg) {
     this.valueWriter(this, arg);
 };
 
+ui.NewExpenseWidgetScreen.prototype.offsetTop = function () {
+  return this.$root.position().top;
+};
+
 ui.NewExpenseWidgetScreen.prototype.focus = function () {
+  this.$allInputs.prop("disabled", false);
+  this.$root.addClass("focus");
+  this.focusInput();
+};
+
+ui.NewExpenseWidgetScreen.prototype.unfocus = function () {
+  this.$allInputs.prop("disabled", true);
+  this.$root.removeClass("focus");
+};
+
+ui.NewExpenseWidgetScreen.prototype.focusInput = function () {
   this.$firstInput.focus();
 };
 
