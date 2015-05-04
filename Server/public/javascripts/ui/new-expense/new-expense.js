@@ -12,6 +12,7 @@
 ui.NewExpenseWidget = function ($root, eventHooks, currentExpenseList) {
   eventHooks = eventHooks || {};
 
+  var self = this;
   this.$root = $root;
   this.orderedScreenList = [];
   this.currentScreenIndex = -1;
@@ -44,13 +45,12 @@ ui.NewExpenseWidget = function ($root, eventHooks, currentExpenseList) {
   // Select the orderedScreenList and populate the orderedScreenList list
   for (var i = 0; i < screenMetadatum.length; i++) {
     var data = screenMetadatum[i];
-    this.orderedScreenList[i] =
-        new data.clazz(
-            $root.find(utils.idSelector(data.id)),
-            {
-              next: this.nextScreen.bind(this),
-              submit: this.submit.bind(this)
-            }, data.handlers);
+    this.orderedScreenList[i] = new data.clazz(
+        $root.find(utils.idSelector(data.id)),
+        {
+          next: function () { self.nextScreen(true); },
+          submit: function () { self.submit(); }
+        }, data.handlers);
     this.orderedScreenList[i].unfocus();
   }
 
@@ -68,6 +68,64 @@ ui.NewExpenseWidget = function ($root, eventHooks, currentExpenseList) {
     $(this).addClass("hidden");
   });
 
+  // Attach scroll handler for switching screens
+  $(window).scroll(function (event) {
+    if (!self.$root.hasClass("hidden")) {
+      // If the user scrolls more than a certain amount outside of the current screen, then switch
+      // the screen.
+      var curScreen = self.currentScreen();
+      if (curScreen) {
+        var scrollOffset = self.$questionGroup.offset().top;
+        var scrollTop = $(window).scrollTop();
+        var scrollBottom = scrollTop + $(window).outerHeight();
+
+        // For each screen, extract its top offset
+        var topValues = _.map(self.orderedScreenList, function (screen) {
+          return screen.offsetTop();
+        });
+
+        // Convert list of offsets to distance between top screen and top scroll, filter out
+        // negatives offsets
+        var distances = _.filter(
+            _.map(topValues, function (offset, index) {
+              return { index: index, value: offset - scrollTop };
+            }),
+            function (group) {
+              return group.value >= -1; // Account for rounding errors
+            });
+
+        // Take the closest positive top distance
+        var sorted = distances.sort(function (a, b) { return a.value - b.value; });
+        self.switchScreen(sorted[0].index);
+
+        // Build a list of segments consisting of the offset top and offset bottom of each screen
+        //var segments = _.map(self.orderedScreenList, function (screen) {
+        //  var top = scrollOffset + screen.offsetTop();
+        //  return { top: top, bottom: top + screen.height() };
+        //});
+        //
+        //// Convert list of segments to list of percentage of screen covered by viewport
+        //var percentageCoverage = _.map(segments, function (segment, index) {
+        //  var value = 0;
+        //  var size = segment.bottom - segment.top;
+        //  if (scrollTop >= segment.top && scrollTop < segment.bottom) {
+        //    // Top is in the screen
+        //    value = (Math.min(segment.bottom, scrollBottom) - scrollTop) / size;
+        //  } else if (scrollBottom >= segment.top && scrollBottom < segment.bottom) {
+        //    // Bottom is in the screen
+        //    value = (scrollBottom - Math.max(segment.top, scrollTop)) / size;
+        //  }
+        //  return { index: index, value: value };
+        //});
+        //
+        //// Take the largest coverage
+        //var sorted = percentageCoverage.sort(function (a, b) { return b.value - a.value; });
+        //console.log("switching to " + sorted[0].index);
+        //self.switchScreen(sorted[0].index);
+      }
+    }
+  });
+
   this.switchScreen(0);
 };
 
@@ -77,19 +135,25 @@ ui.NewExpenseWidget.prototype.setExpenseList = function (expList) {
     this.orderedScreenList[i].setExpenseList(expList);
 };
 
-ui.NewExpenseWidget.prototype.nextScreen = function () {
-  this.switchScreen(this.currentScreenIndex + 1);
+ui.NewExpenseWidget.prototype.nextScreen = function (shouldScroll) {
+  this.switchScreen(this.currentScreenIndex + 1, shouldScroll);
 };
 
-ui.NewExpenseWidget.prototype.switchScreen = function (index) {
+ui.NewExpenseWidget.prototype.previousScreen = function (shouldScroll) {
+  this.switchScreen(this.currentScreenIndex - 1, shouldScroll);
+};
+
+ui.NewExpenseWidget.prototype.switchScreen = function (index, shouldScroll) {
   if (index !== this.currentScreenIndex && index < this.orderedScreenList.length && index >= 0) {
+    var self = this;
     if (this.currentScreen())
       this.currentScreen().unfocus();
     this.currentScreenIndex = index;
     this.currentScreen().focus();
-    this.$scrollContainer.animate({
-      scrollTop: this.currentScreen().offsetTop()
-    }, 400);
+    if (shouldScroll) {
+      this.$scrollContainer.animate(
+          { scrollTop: this.currentScreen().offsetTop() }, { duration: 400 });
+    }
     this.updateIndicator();
   }
   this.currentScreen().focusInput();

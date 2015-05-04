@@ -84,6 +84,10 @@ ui.NewExpenseWidgetScreen.prototype.offsetTop = function () {
   return this.$root.position().top;
 };
 
+ui.NewExpenseWidgetScreen.prototype.height = function () {
+  return this.$root.outerHeight();
+};
+
 ui.NewExpenseWidgetScreen.prototype.focus = function () {
   this.$allInputs.prop("disabled", false);
   this.$root.addClass("focus");

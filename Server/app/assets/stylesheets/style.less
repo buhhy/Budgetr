@@ -324,20 +324,34 @@ section {
       min-height: 65%;
 
       &:last-child {
-        // we want the last question box, when scrolled to the bottom, to be positioned at the top
+        // We want the last question box, when scrolled to the bottom, to be positioned at the top
         // of the page rather than at the middle of the page
         min-height: 100%;
-        margin-bottom: 0.75em; // emulates the bottom margin on html
+        margin-bottom: 0.75em; // Emulates the bottom margin on html
+      }
+
+      &.focus {
+        // When the screen is focused as the primary input screen
+        .new-expense-question {
+          color: #2FB28C;
+        }
+
+        .instruction {
+          color: #289E7F;
+        }
       }
 
       .new-expense-question {
         font-size: 3em;
         font-weight: 400;
-        color: #2FB28C;
+        color: #7EDEC2;
         line-height: 1.2em;
+
+        .transition(300ms all ease);
       }
 
       .instruction {
+        color: #73C9B3;
         font-size: 0.7em;
         letter-spacing: 0.09em;
         font-family: Lato, sans-serif;
@@ -345,6 +359,8 @@ section {
 
         margin-top: 0.5em;
         padding-left: 0.7em;
+
+        .transition(300ms all ease);
       }
 
       ul {
@@ -379,6 +395,7 @@ section {
         width: 100%;
         max-width: 25em;
         font-size: 2em;
+        margin-top: 0.4em;
       }
 
       .cs-input {
