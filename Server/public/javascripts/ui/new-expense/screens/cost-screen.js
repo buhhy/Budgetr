@@ -21,33 +21,49 @@ ui.NewExpenseWidgetCostScreen = ui.NewExpenseWidgetScreen.extend(
           return {
             cost: utils.parseFloatDefault(screen.$firstInput.val(), 0),
             members: screen.$costStructureContainer
-                .find(utils.idSelector("csRow"))
+                .find(utils.idSelector(screen.dataIds.row))
                 .map(function () {
                   return {
                     userId: parseInt($(this).attr("data-user-id")),
                     paidAmount:
                         utils.parseFloatDefault(
-                            $(this).find(utils.idSelector("csSpentInput")).val(), 0),
+                            $(this).find(utils.idSelector(screen.dataIds.spentInput)).val(), 0),
                     responsibleAmount:
                         utils.parseFloatDefault(
-                            $(this).find(utils.idSelector("csResponsibleInput")).val(), 0)
+                            $(this).find(utils.idSelector(
+                                screen.dataIds.responsibleInput)).val(), 0)
                   }
                 })
                 .toArray()
           };
+        },
+        valueClear: function (screen) {
+          screen.areDefaultsSet = false;
+          self.$firstInput.val("");
+          self.$root.find(utils.idSelector(screen.dataIds.spentInput)).val("");
         }
       });
 
       this.super.constructor.call(this, $root, eventHooks, extendedValueHandlers);
       this.$costStructureContainer = this.$root.find(utils.idSelector("costStructureContainer"));
+      this.areDefaultsSet = false;
+      this.dataIds = {
+        spentInput: "csSpentInput",
+        responsibleInput: "csResponsibleInput",
+        row: "csRow"
+      };
       var self = this;
 
       this.$firstInput.blur(function () {
-        var value = $(this).val();
+        var value = parseFloat($(this).val());
+        if (isNaN(value))
+          value = null;
+        self.setDefaultSpentInputs(
+            self.$root.find(utils.idSelector(self.dataIds.row)), value, userId);
         self.normalizeInputFields(
-            $(), self.$root.find(utils.idSelector("csSpentInput")), value);
+            $(), self.$root.find(utils.idSelector(self.dataIds.spentInput)), value);
         self.normalizeInputFields(
-            $(), self.$root.find(utils.idSelector("csResponsibleInput")), 100);
+            $(), self.$root.find(utils.idSelector(self.dataIds.responsibleInput)), 100);
       });
     });
 
@@ -55,6 +71,7 @@ ui.NewExpenseWidgetCostScreen.prototype.setExpenseList = function (expList) {
   // Create the list of users
   // TODO(tlei): selectively add and remove instead of doing bulk delete, then re-add
   this.$costStructureContainer.empty();
+  this.areDefaultsSet = false;
 
   var numMem = expList.members.length;
   var self = this;
@@ -89,7 +106,8 @@ ui.NewExpenseWidgetCostScreen.prototype.setExpenseList = function (expList) {
                     .addClass("cs-input")
                     .attr("type", "number")
                     .attr("data-index", i)
-                    .attr("data-id", "csSpentInput")
+                    .attr("data-id", this.dataIds.spentInput)
+                    .attr("placeholder", 0)
                     .on("keyup", function (event) {
                       // Enter key pressed
                       if (event.keyCode === 13 && self.eventHooks.next)
@@ -98,10 +116,9 @@ ui.NewExpenseWidgetCostScreen.prototype.setExpenseList = function (expList) {
                     .blur(function () {
                       self.normalizeInputFields(
                           $(this),
-                          findOtherElems($(this), "csSpentInput"),
+                          findOtherElems($(this), self.dataIds.spentInput),
                           utils.parseFloatDefault(self.$firstInput.val(), 0));
-                    })
-                    .val(0)))
+                    })))
             .append(
             $("<span></span>")
                 .addClass("cs-column")
@@ -110,7 +127,7 @@ ui.NewExpenseWidgetCostScreen.prototype.setExpenseList = function (expList) {
                     .addClass("cs-input")
                     .attr("type", "number")
                     .attr("data-index", i)
-                    .attr("data-id", "csResponsibleInput")
+                    .attr("data-id", this.dataIds.responsibleInput)
                     .on("keyup", function (event) {
                       // Enter key pressed
                       if (event.keyCode === 13 && self.eventHooks.next)
@@ -119,13 +136,28 @@ ui.NewExpenseWidgetCostScreen.prototype.setExpenseList = function (expList) {
                     .blur(function () {
                       self.normalizeInputFields(
                           $(this),
-                          findOtherElems($(this), "csResponsibleInput"),
+                          findOtherElems($(this), self.dataIds.responsibleInput),
                           100);
                     })
                     .val(100.0 / numMem))
                 .append("%")));
   }
 };
+
+ui.NewExpenseWidgetCostScreen.prototype.setDefaultSpentInputs =
+    function ($rows, expectedValue, userId) {
+      if (!this.areDefaultsSet && expectedValue !== null) {
+        var self = this;
+        $rows.each(function () {
+          var $input = $(this).find(utils.idSelector(self.dataIds.spentInput));
+          if (parseInt($(this).attr("data-user-id")) === userId)
+            $input.val(expectedValue);
+          else
+            $input.val(0);
+        });
+        this.areDefaultsSet = true;
+      }
+    };
 
 ui.NewExpenseWidgetCostScreen.prototype.normalizeInputFields =
     function ($elem, $otherInputs, expectedValue) {
