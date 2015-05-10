@@ -73,10 +73,11 @@ ui.NewExpenseWidgetScreen.prototype.height = function () {
   return this.$root.outerHeight();
 };
 
-ui.NewExpenseWidgetScreen.prototype.focus = function () {
+ui.NewExpenseWidgetScreen.prototype.focus = function (autoscroll) {
   this.$allInputs.prop("disabled", false);
   this.$root.addClass("focus");
-  this.focusInput();
+  if (autoscroll)
+    this.focusInput();
 };
 
 ui.NewExpenseWidgetScreen.prototype.unfocus = function () {

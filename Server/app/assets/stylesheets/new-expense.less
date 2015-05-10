@@ -210,7 +210,7 @@
   }
 }
 
-@media(max-width: @mobileScreenWidth) {
+@media (max-width: @mobileScreenWidth) {
   .new-expense {
     .topbar {
       .item {
@@ -234,12 +234,41 @@
     }
 
     .question-box {
+      min-height: 20em; // For on-screen keyboard
+
       .new-expense-question {
         font-size: 1.85em;
       }
 
       .main-input {
         font-size: 1.5em;
+      }
+    }
+  }
+}
+
+// If the screen is a lot more wide than tall (ie: on-screen keyboard)
+@media (max-width: @mobileScreenWidth) and (min-aspect-ratio: 6/7) {
+  .action {
+    bottom: -2em;
+    height: 8em;
+
+    .transition(300ms all ease);
+
+    .button {
+      top: 30%;
+
+      div {
+        font-size: 0.75em;
+        top: 10%;
+
+        &:first-child {
+          font-size: 0.9em;
+        }
+
+        &:last-child {
+          margin-top: 0.15em;
+        }
       }
     }
   }

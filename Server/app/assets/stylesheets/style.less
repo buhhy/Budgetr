@@ -1,6 +1,4 @@
 @import "mixins.less";
-@import "expense-list";
-@import "new-expense";
 
 html {
   min-height: 30em;
@@ -49,6 +47,7 @@ body {
   }
 }
 
+// Bottom gradient
 .action {
   left: 0;
   display: block;
@@ -56,6 +55,8 @@ body {
   bottom: 0;
   height: 16em;
   width: 100%;
+
+  // White to transparency gradient
   background: -moz-linear-gradient(top,  rgba(238,255,245,0) 0%, rgba(238,255,245,0.02) 1%, rgba(238,255,245,1) 65%, rgba(238,255,245,1) 98%); /* FF3.6+ */
   background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(238,255,245,0)), color-stop(1%,rgba(238,255,245,0.02)), color-stop(65%,rgba(238,255,245,1)), color-stop(98%,rgba(238,255,245,1))); /* Chrome,Safari4+ */
   background: -webkit-linear-gradient(top,  rgba(238,255,245,0) 0%,rgba(238,255,245,0.02) 1%,rgba(238,255,245,1) 65%,rgba(238,255,245,1) 98%); /* Chrome10+,Safari5.1+ */
@@ -63,6 +64,9 @@ body {
   background: -ms-linear-gradient(top,  rgba(238,255,245,0) 0%,rgba(238,255,245,0.02) 1%,rgba(238,255,245,1) 65%,rgba(238,255,245,1) 98%); /* IE10+ */
   background: linear-gradient(to bottom,  rgba(238,255,245,0) 0%,rgba(238,255,245,0.02) 1%,rgba(238,255,245,1) 65%,rgba(238,255,245,1) 98%); /* W3C */
   filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00eefff5', endColorstr='#eefff5',GradientType=0 ); /* IE6-9 */
+
+  // Clicks on the inputs shouldn't be masked
+  pointer-events: none;
 
   .button {
     border-radius: 50%;
@@ -73,6 +77,9 @@ body {
     margin: 0 auto;
     top: 50%;
     box-shadow: 0 0.2em 0.4em #AABCB1;
+
+    // Override the parent
+    pointer-events: auto;
 
     .transition(300ms all ease);
 
@@ -144,3 +151,6 @@ input {
 .hidden {
   display:none;
 }
+
+@import "expense-list";
+@import "new-expense";

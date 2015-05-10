@@ -83,6 +83,7 @@ ui.NewExpenseWidget = function ($root, eventHooks, currentExpenseList) {
       if (curScreen) {
         var scrollOffset = self.$questionGroup.offset().top;
         var scrollTop = $(window).scrollTop();
+        var currentScrollTop = curScreen.offsetTop();
         var scrollBottom = scrollTop + $(window).outerHeight();
 
         // For each screen, extract its top offset
@@ -102,12 +103,14 @@ ui.NewExpenseWidget = function ($root, eventHooks, currentExpenseList) {
 
         // Take the closest positive top distance
         var sorted = distances.sort(function (a, b) { return a.value - b.value; });
-        self.switchScreen(sorted[0].index);
+        // The new screen is actually closer than the old screen
+        if (sorted.length > 0 && sorted[0].value <= Math.abs(scrollTop - currentScrollTop))
+          self.switchScreen(sorted[0].index, false);
       }
     }
   });
 
-  this.switchScreen(0);
+  this.switchScreen(0, false);
 };
 
 ui.NewExpenseWidget.prototype.setExpenseList = function (expList) {
@@ -124,7 +127,7 @@ ui.NewExpenseWidget.prototype.previousScreen = function (shouldScroll) {
   this.switchScreen(this.currentScreenIndex - 1, shouldScroll);
 };
 
-ui.NewExpenseWidget.prototype.switchScreen = function (index, shouldScroll) {
+ui.NewExpenseWidget.prototype.switchScreen = function (index, autoscroll) {
   // If the user switches to a screen past the last screen, then submit
   if (index === this.orderedScreenList.length)
     this.submit();
@@ -134,8 +137,8 @@ ui.NewExpenseWidget.prototype.switchScreen = function (index, shouldScroll) {
     if (this.currentScreen())
       this.currentScreen().unfocus();
     this.currentScreenIndex = index;
-    this.currentScreen().focus();
-    if (shouldScroll) {
+    this.currentScreen().focus(autoscroll);
+    if (autoscroll) {
       this.$scrollContainer.animate(
           { scrollTop: this.currentScreen().offsetTop() }, { duration: 400 });
     }
@@ -161,7 +164,8 @@ ui.NewExpenseWidget.prototype.currentScreen = function () {
 
 ui.NewExpenseWidget.prototype.show = function () {
   this.$root.removeClass("hidden");
-  this.switchScreen(0);
+  this.switchScreen(0, false);
+  this.currentScreen().focusInput();
 };
 
 ui.NewExpenseWidget.prototype.hide = function () {
@@ -171,7 +175,8 @@ ui.NewExpenseWidget.prototype.hide = function () {
 ui.NewExpenseWidget.prototype.reset = function () {
   for (var i = 0; i < this.orderedScreenList.length; i++)
     this.orderedScreenList[i].clear();
-  this.switchScreen(0);
+  this.switchScreen(0, false);
+  this.currentScreen().focusInput();
 };
 
 ui.NewExpenseWidget.prototype.submit = function () {
