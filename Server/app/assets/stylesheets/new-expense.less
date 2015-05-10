@@ -7,15 +7,63 @@
 
   .box-sizing(border-box);
 
+  .header .topbar .item {
+    &.title {
+      padding-right: 1em;
+    }
+
+    &.progress {
+      width: 50%;
+      white-space: nowrap;
+
+      div {
+        border-radius: 50%;
+        width: 0.6em;
+        height: 0.6em;
+        background-color: #B9EDDB;
+        display: inline-block;
+        margin-left: 0.15em;
+
+        .transition(300ms all ease);
+
+        &.current-prog {
+          background-color: #80BCA8;
+        }
+      }
+    }
+
+    &.cancel-button {
+      width: 100%;
+      text-align: right;
+
+      &:hover {
+        cursor: pointer;
+
+        span {
+          color: #8E8E8E;
+        }
+
+        svg {
+          fill: #8E8E8E;
+        }
+      }
+
+      span {
+        padding-right: 0.5em;
+        color: #C9C9C9;
+      }
+
+      svg {
+        fill: #C9C9C9;
+      }
+    }
+  }
+
   .new-expense-form {
     height: 100%;
     position: relative;
 
     .box-sizing(border-box);
-  }
-
-  .topbar {
-    margin: 0 0 0.5em;
   }
 
   .notification-box {
@@ -164,6 +212,27 @@
 
 @media(max-width: @mobileScreenWidth) {
   .new-expense {
+    .topbar {
+      .item {
+        &.title {
+          width: auto;
+        }
+
+        &.progress {
+          width: 100%;
+        }
+
+        &.cancel-button {
+          padding-left: 2em;
+          padding-right: 1em;
+
+          span {
+            display: none;
+          }
+        }
+      }
+    }
+
     .question-box {
       .new-expense-question {
         font-size: 1.85em;

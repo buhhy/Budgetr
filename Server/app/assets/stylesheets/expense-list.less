@@ -8,6 +8,32 @@
 
   .box-sizing(border-box);
 
+  .header .topbar .item {
+    &.title {
+      width: 100%;
+    }
+
+    &.username {
+      font-size: 1em;
+      padding-right: 1em;
+      vertical-align: bottom;
+    }
+
+    &.logout {
+      font-size: 1em;
+      vertical-align: bottom;
+
+      a {
+        padding-right: 0.25em;
+        color: #289E7F;
+
+        &:hover {
+          color: #80BCA8;
+        }
+      }
+    }
+  }
+
   h2 {
     color: #289E7F;
     font-family: "Lato", sans-serif;
