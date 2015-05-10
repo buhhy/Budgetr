@@ -18,6 +18,7 @@ ui.NewExpenseWidget = function ($root, eventHooks, currentExpenseList) {
   this.currentScreenIndex = -1;
   this.$indicatorBar = $root.find(utils.idSelector("indicatorBar"));
   this.$questionGroup = $root.find(utils.idSelector("questionGroup"));
+  this.$submitButton = $root.find(utils.idSelector("submitButton"));
   this.$scrollContainer = $("body,html");  // Firefox has scrollbar on body, chrome on body
   this.indicatorList = this.$indicatorBar.find(utils.idSelector("indicator")).toArray();
   this.currentExpenseList = currentExpenseList;
@@ -68,6 +69,11 @@ ui.NewExpenseWidget = function ($root, eventHooks, currentExpenseList) {
     $(this).addClass("hidden");
   });
 
+  this.$submitButton.click(function (event) {
+    if (self.currentScreenIndex === self.orderedScreenList.length - 1)
+      self.nextScreen();
+  });
+
   // Attach scroll handler for switching screens
   $(window).scroll(function (event) {
     if (!self.$root.hasClass("hidden")) {
@@ -97,31 +103,6 @@ ui.NewExpenseWidget = function ($root, eventHooks, currentExpenseList) {
         // Take the closest positive top distance
         var sorted = distances.sort(function (a, b) { return a.value - b.value; });
         self.switchScreen(sorted[0].index);
-
-        // Build a list of segments consisting of the offset top and offset bottom of each screen
-        //var segments = _.map(self.orderedScreenList, function (screen) {
-        //  var top = scrollOffset + screen.offsetTop();
-        //  return { top: top, bottom: top + screen.height() };
-        //});
-        //
-        //// Convert list of segments to list of percentage of screen covered by viewport
-        //var percentageCoverage = _.map(segments, function (segment, index) {
-        //  var value = 0;
-        //  var size = segment.bottom - segment.top;
-        //  if (scrollTop >= segment.top && scrollTop < segment.bottom) {
-        //    // Top is in the screen
-        //    value = (Math.min(segment.bottom, scrollBottom) - scrollTop) / size;
-        //  } else if (scrollBottom >= segment.top && scrollBottom < segment.bottom) {
-        //    // Bottom is in the screen
-        //    value = (scrollBottom - Math.max(segment.top, scrollTop)) / size;
-        //  }
-        //  return { index: index, value: value };
-        //});
-        //
-        //// Take the largest coverage
-        //var sorted = percentageCoverage.sort(function (a, b) { return b.value - a.value; });
-        //console.log("switching to " + sorted[0].index);
-        //self.switchScreen(sorted[0].index);
       }
     }
   });
@@ -144,6 +125,10 @@ ui.NewExpenseWidget.prototype.previousScreen = function (shouldScroll) {
 };
 
 ui.NewExpenseWidget.prototype.switchScreen = function (index, shouldScroll) {
+  // If the user switches to a screen past the last screen, then submit
+  if (index === this.orderedScreenList.length)
+    this.submit();
+
   if (index !== this.currentScreenIndex && index < this.orderedScreenList.length && index >= 0) {
     var self = this;
     if (this.currentScreen())
@@ -154,6 +139,11 @@ ui.NewExpenseWidget.prototype.switchScreen = function (index, shouldScroll) {
       this.$scrollContainer.animate(
           { scrollTop: this.currentScreen().offsetTop() }, { duration: 400 });
     }
+    // Submit button is only enabled on the last screen
+    if (index < this.orderedScreenList.length - 1)
+      this.$submitButton.addClass("disabled");
+    else
+      this.$submitButton.removeClass("disabled");
     this.updateIndicator();
   }
   this.currentScreen().focusInput();
@@ -185,6 +175,10 @@ ui.NewExpenseWidget.prototype.reset = function () {
 };
 
 ui.NewExpenseWidget.prototype.submit = function () {
+  // Only allow submit on the last screen
+  if (this.currentScreenIndex !== this.orderedScreenList.length - 1)
+    return;
+
   var json = {};
   for (var i = 0; i < this.orderedScreenList.length; i++)
     this.orderedScreenList[i].serialize(json);

@@ -1,0 +1,177 @@
+@import "mixins";
+@import "constants";
+
+.new-expense {
+  height: 100%;
+  padding-top: 5em;
+
+  .box-sizing(border-box);
+
+  .new-expense-form {
+    height: 100%;
+    position: relative;
+
+    .box-sizing(border-box);
+  }
+
+  .topbar {
+    margin: 0 0 0.5em;
+  }
+
+  .notification-box {
+    max-width: 25em;
+    background-color: #E4F9EF;
+    padding: 0.4em;
+    margin: 1em 0 0 0;
+    width: 93%;
+
+    &:hover {
+      cursor:pointer;
+      background-color: #D9F4E7;
+
+      .dismiss {
+        font-weight: 600;
+      }
+    }
+
+    h3 {
+      display: table-cell;
+      font-size: 0.7em;
+      letter-spacing: 0.09em;
+      font-family: Lato, sans-serif;
+      font-weight: 500;
+
+      &.notification {
+        width: 0;
+        white-space: nowrap;
+      }
+
+      &.dismiss {
+        color: #8E8E8E;
+        text-align: right;
+        width: 100%;
+      }
+    }
+  }
+
+  .question-box {
+    min-height: 65%;
+
+    &:last-child {
+      // We want the last question box, when scrolled to the bottom, to be positioned at the top
+      // of the page rather than at the middle of the page
+      min-height: 100%;
+      margin-bottom: 0.75em; // Emulates the bottom margin on html
+    }
+
+    &.focus {
+      // When the screen is focused as the primary input screen
+      .new-expense-question {
+        color: #2FB28C;
+      }
+
+      .instruction {
+        color: #289E7F;
+      }
+    }
+
+    .new-expense-question {
+      font-size: 3em;
+      font-weight: 400;
+      color: #7EDEC2;
+      line-height: 1.2em;
+
+      .transition(300ms all ease);
+    }
+
+    .instruction {
+      color: #73C9B3;
+      font-size: 0.7em;
+      letter-spacing: 0.09em;
+      font-family: Lato, sans-serif;
+      font-weight: 500;
+
+      margin-top: 0.5em;
+      padding-left: 0.7em;
+
+      .transition(300ms all ease);
+    }
+
+    ul {
+      margin: 0.5em 0 0 0.2em;
+      list-style: none;
+      font-size: 2em;
+      color: #88BFAD;
+      line-height: 1.3em;
+
+      &.cs-inputs-container {
+        width: 99%;
+        max-width: 25em;
+        display: table;
+
+        .cs-row {
+          display: table-row;
+
+          .cs-column {
+            display: table-cell;
+            white-space: nowrap;
+            font-size: 0.75em;
+
+            &.cs-wide {
+              width: 100%;
+            }
+          }
+        }
+      }
+    }
+
+    .main-input {
+      width: 100%;
+      max-width: 25em;
+      font-size: 2em;
+      margin-top: 0.4em;
+    }
+
+    .cs-input {
+      font-size: 1em;
+      text-align: right;
+      width: 3.5em;
+    }
+  }
+
+  // typeahead dropdown menu
+  .tt-menu {
+    width: 100%;
+    background-color: #DEEFE5;
+
+    .tt-suggestion {
+      font-size: 1.4em;
+      width: 100%;
+      cursor: pointer;
+      padding: 0.6em;
+      color: #8FB59F;
+
+      .box-sizing(border-box);
+      .transition(all 200ms ease);
+
+      &.tt-cursor, &:hover {
+        background-color: #F2FFF7;
+        color: #61BAA3;
+      }
+    }
+  }
+}
+
+@media(max-width: @mobileScreenWidth) {
+  .new-expense {
+    .question-box {
+      .new-expense-question {
+        font-size: 1.85em;
+      }
+
+      .main-input {
+        font-size: 1.5em;
+      }
+    }
+  }
+}

@@ -11,10 +11,10 @@ ui.NewExpenseWidgetItemsScreen = ui.NewExpenseWidgetScreen.extend(
       this.super.constructor.call(
           this, $root,
           $.extend({}, eventHooks, {
-            submit: function (screen) {
+            next: function (screen) {
               self.addNewItem(self.$itemInput.val());
-              if (eventHooks.submit)
-                eventHooks.submit(screen)
+              if (eventHooks.next)
+                eventHooks.next()
             }
           }),
           $.extend({}, valueHandlers, {

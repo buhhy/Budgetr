@@ -1,0 +1,91 @@
+@import "mixins";
+@import "constants";
+
+.expense-log-screen {
+  height: 100%;
+  padding-top: 1em;
+  padding-bottom: 8em;
+
+  .box-sizing(border-box);
+
+  h2 {
+    color: #289E7F;
+    font-family: "Lato", sans-serif;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    font-size: 0.9em;
+    border-bottom: 2.5px solid #289E7F;
+    padding: 0.5em;
+    margin: 1em 0 0.7em;
+    text-transform: uppercase;
+  }
+
+  ul.expense-list {
+    width: 100%;
+    table-layout: fixed;
+    display: table;
+
+    li.expense, li.table-headings {
+      display: table-row;
+      list-style: none;
+
+      div {
+        display: table-cell;
+        padding-bottom: 0.6em;
+
+        &.business, &.items, &.category {
+          .truncate;
+        }
+
+        &.items {
+          width: 40%;
+        }
+
+        &.category {
+          width: 20%;
+        }
+
+        &.cost {
+          width: 10%;
+          text-align: right;
+        }
+      }
+    }
+  }
+
+  .day-log {
+    margin: 0.7em 0;
+    width: 98%;
+
+    .table-headings {
+      display: table;
+      margin: 0 0.5em 0.8em;
+      padding-bottom: 0.5em;
+      width: 99.5%;
+      letter-spacing: 1px;
+      border-bottom: 1px solid #ace6d7;
+      color: #6ebca7;
+
+      .table-column {
+        display: table-cell;
+        text-transform: uppercase;
+        font-size: 0.9em;
+        margin-left: 0.5em;
+
+        &:last-child {
+          text-align: right;
+        }
+      }
+    }
+  }
+
+  .truncate {
+    span {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: block;
+      margin: 0 0.5em;
+    }
+  }
+}

@@ -37,8 +37,6 @@ ui.NewExpenseWidgetScreen = ui.extend(
       this.$root = $root;
       this.$firstInput = $root.find("[data-first-input]");
       this.$lastInput = $root.find("[data-last-input]");
-      this.$submitInput = $root.find("[data-submit-input]");
-      this.$submitButton = $root.find("[data-submit-button]");
       this.$allInputs = $root.find("input");
 
       // Assign the next screen keypress handlers
@@ -46,19 +44,6 @@ ui.NewExpenseWidgetScreen = ui.extend(
         // Enter key pressed
         if (event.keyCode === 13 && self.eventHooks.next)
           self.eventHooks.next();
-      });
-
-      // Assign the submit handlers if any
-      this.$submitInput.on("keypress", function (event) {
-        // Enter key pressed
-        if (event.keyCode === 13 && self.eventHooks.submit)
-          self.eventHooks.submit(self);
-      });
-
-      this.$submitButton.on("click", function (event) {
-        event.preventDefault();
-        if (self.eventHooks.submit)
-          self.eventHooks.submit(self);
       });
     });
 
