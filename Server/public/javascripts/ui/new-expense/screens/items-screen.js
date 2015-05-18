@@ -34,7 +34,7 @@ ui.NewExpenseWidgetItemsScreen = ui.NewExpenseWidgetScreen.extend(
               return json;
             }
           }));
-      this.delimiterKeys = [188];
+      this.delimiterKeys = [188, 13];
       this.deleteKeys = [8, 127];
       this.$itemInput = this.$root.find(utils.idSelector("itemInput"));
       this.$itemList = this.$root.find(utils.idSelector("itemList"));
@@ -43,9 +43,12 @@ ui.NewExpenseWidgetItemsScreen = ui.NewExpenseWidgetScreen.extend(
         if (self.areKeysPressed(self.delimiterKeys, event)) {
           // Add a new item when the delimiter is pressed
           event.preventDefault();
-          // Remove the last character
           var value = self.$itemInput.val();
-          self.addNewItem(value.substr(0, value.length - 1).trim());
+          // Remove the last character if it is equal to the key pressed, this is to differentiate
+          // between enter presses vs comma presses.
+          if (value.charCodeAt(value.length - 1) === event.keyCode)
+            value = value.substr(0, value.length - 1);
+          self.addNewItem(value.trim());
         } else if (self.areKeysPressed(self.deleteKeys, event)) {
           // If the input field is empty, then delete the last item inserted
           if (!self.$itemInput.val()) {
