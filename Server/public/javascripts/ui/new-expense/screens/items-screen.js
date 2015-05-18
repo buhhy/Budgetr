@@ -9,14 +9,7 @@ ui.NewExpenseWidgetItemsScreen = ui.NewExpenseWidgetScreen.extend(
     function ($root, eventHooks, valueHandlers) {
       var self = this;
       this.super.constructor.call(
-          this, $root,
-          $.extend({}, eventHooks, {
-            next: function (screen) {
-              self.addNewItem(self.$itemInput.val());
-              if (eventHooks.next)
-                eventHooks.next()
-            }
-          }),
+          this, $root, eventHooks,
           $.extend({}, valueHandlers, {
             valueExtractor: function (screen) {
               return screen.$itemList
@@ -40,6 +33,13 @@ ui.NewExpenseWidgetItemsScreen = ui.NewExpenseWidgetScreen.extend(
       this.$itemList = this.$root.find(utils.idSelector("itemList"));
 
       this.$itemInput.on("keyup", function (event) {
+        // Ctrl + enter will submit
+        if (event.keyCode === 13 && event.ctrlKey) {
+          if (self.eventHooks.submit)
+            self.eventHooks.submit();
+        }
+
+
         if (self.areKeysPressed(self.delimiterKeys, event)) {
           // Add a new item when the delimiter is pressed
           event.preventDefault();
@@ -76,4 +76,8 @@ ui.NewExpenseWidgetItemsScreen.prototype.addNewItem = function (value) {
     this.$itemList.prepend($newElem);
     this.$itemInput.val("");
   }
+};
+
+ui.NewExpenseWidgetItemsScreen.prototype.onSubmit = function () {
+  this.addNewItem(this.$itemInput.val());
 };

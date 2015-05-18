@@ -46,6 +46,9 @@ ui.NewExpenseWidgetScreen = ui.extend(
         if (event.keyCode === 13 && self.eventHooks.next)
           self.eventHooks.next();
       });
+
+      // Screen is disabled by default
+      this.$allInputs.prop("disabled", true);
     });
 
 ui.NewExpenseWidgetScreen.prototype.setExpenseList = function (expList) {
@@ -79,6 +82,8 @@ ui.NewExpenseWidgetScreen.prototype.height = function () {
 ui.NewExpenseWidgetScreen.prototype.focus = function (autoscroll) {
   this.$allInputs.prop("disabled", false);
   this.$root.addClass("focus");
+  // This exists because of really weird scrolling interactions on mobile web, ideally we would
+  // always focus the next input.
   if (autoscroll)
     this.focusInput();
 };
@@ -99,3 +104,19 @@ ui.NewExpenseWidgetScreen.prototype.clear = function () {
 ui.NewExpenseWidgetScreen.prototype.serialize = function (json) {
   return this.valueSerializer(this, json);
 };
+
+/**
+ * Callback on when the current screen is finished, whether by submitting the form or advancing to
+ * the next screen.
+ */
+ui.NewExpenseWidgetScreen.prototype.onFinish = function () { };
+
+/**
+ * Callback on when this screen becomes active.
+ */
+ui.NewExpenseWidgetScreen.prototype.onStart = function () { };
+
+/**
+ * Callback on when the screen is submitted.
+ */
+ui.NewExpenseWidgetScreen.prototype.onSubmit = function () { };

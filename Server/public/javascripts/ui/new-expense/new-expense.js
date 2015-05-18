@@ -45,8 +45,8 @@ ui.NewExpenseWidget = function ($root, eventHooks, currentExpenseList) {
         {
           next: function () { self.nextScreen(true); },
           submit: function () { self.submit(); }
-        }, data.handlers);
-    this.orderedScreenList[i].unfocus();
+        },
+        data.handlers);
   }
 
   for (var j = 0; j < this.indicatorList.length; j++)
@@ -64,8 +64,7 @@ ui.NewExpenseWidget = function ($root, eventHooks, currentExpenseList) {
   });
 
   this.$submitButton.click(function (event) {
-    if (self.currentScreenIndex === self.orderedScreenList.length - 1)
-      self.nextScreen();
+    self.submit();
   });
 
   // Attach scroll handler for switching screens
@@ -122,16 +121,15 @@ ui.NewExpenseWidget.prototype.previousScreen = function (shouldScroll) {
 };
 
 ui.NewExpenseWidget.prototype.switchScreen = function (index, autoscroll) {
-  // If the user switches to a screen past the last screen, then submit
-  if (index === this.orderedScreenList.length)
-    this.submit();
-
   if (index !== this.currentScreenIndex && index < this.orderedScreenList.length && index >= 0) {
     var self = this;
-    if (this.currentScreen())
+    if (this.currentScreen()) {
       this.currentScreen().unfocus();
+      this.currentScreen().onFinish();
+    }
     this.currentScreenIndex = index;
     this.currentScreen().focus(autoscroll);
+    this.currentScreen().onStart();
     if (autoscroll) {
       this.$scrollContainer.animate(
           { scrollTop: this.currentScreen().offsetTop() }, { duration: 400 });
@@ -178,9 +176,13 @@ ui.NewExpenseWidget.prototype.submit = function () {
   if (this.currentScreenIndex !== this.orderedScreenList.length - 1)
     return;
 
+  this.currentScreen().onFinish();
+
   var json = {};
-  for (var i = 0; i < this.orderedScreenList.length; i++)
+  for (var i = 0; i < this.orderedScreenList.length; i++) {
+    this.orderedScreenList[i].onSubmit();
     this.orderedScreenList[i].serialize(json);
+  }
 
   // Save and get the category ID
   // TODO(tlei): use the cached categories with IDs instead of making an ajax request
