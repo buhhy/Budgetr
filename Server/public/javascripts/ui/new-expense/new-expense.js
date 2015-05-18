@@ -25,13 +25,7 @@ ui.NewExpenseWidget = function ($root, eventHooks, currentExpenseList) {
 
   var screenMetadatum = [{
     id: "questionBusiness",
-    clazz: ui.NewExpenseWidgetScreen,
-    handlers: {
-      valueSerializer: function (screen, json) {
-        json.location = screen.value();
-        return json;
-      }
-    }
+    clazz: ui.NewExpenseWidgetLocationScreen
   }, {
     id: "questionCategory",
     clazz: ui.NewExpenseWidgetCategoryScreen

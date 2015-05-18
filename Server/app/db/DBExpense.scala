@@ -58,5 +58,5 @@ object DBExpense {
   def update(id: Long, exp: Expense) =
     helper.update(toData(exp), Seq(idColumn(id)))
   def delete(id: Long) = helper.delete(Seq(idColumn(id)))
-  def truncate = helper.truncate
+  def truncate() = helper.truncate()
 }

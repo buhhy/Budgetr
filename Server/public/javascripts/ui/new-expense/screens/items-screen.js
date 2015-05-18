@@ -54,6 +54,17 @@ ui.NewExpenseWidgetItemsScreen = ui.NewExpenseWidgetScreen.extend(
           }
         }
       });
+
+      this.$itemInput.typeahead({
+        hint: true,
+        highlight: true,
+        minLength: 1
+      }, {
+        name: "items",
+        source: function (q, cb) {
+          cb(utils.searchThroughArray(q, self.expList.allExpenseDescriptionItems));
+        }
+      });
     });
 
 ui.NewExpenseWidgetItemsScreen.prototype.addNewItem = function (value) {

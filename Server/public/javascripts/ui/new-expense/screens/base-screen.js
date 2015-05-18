@@ -38,6 +38,7 @@ ui.NewExpenseWidgetScreen = ui.extend(
       this.$firstInput = $root.find("[data-first-input]");
       this.$lastInput = $root.find("[data-last-input]");
       this.$allInputs = $root.find("input");
+      this.expList = null;
 
       // Assign the next screen keypress handlers
       this.$lastInput.on("keypress", function (event) {
@@ -47,7 +48,9 @@ ui.NewExpenseWidgetScreen = ui.extend(
       });
     });
 
-ui.NewExpenseWidgetScreen.prototype.setExpenseList = function (expList) {};
+ui.NewExpenseWidgetScreen.prototype.setExpenseList = function (expList) {
+  this.expList = expList;
+};
 
 ui.NewExpenseWidgetScreen.prototype.areKeysPressed = function (keyList, event) {
   for (var i = 0; i < keyList.length; i++) {

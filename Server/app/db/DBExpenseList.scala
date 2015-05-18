@@ -96,6 +96,11 @@ object DBExpenseList {
     }
   }
 
+  /**
+   * Finds all expenses in the desired expense list.
+   * @param id Expense list ID
+   * @return
+   */
   def findAssociatedExpenses(id: Long): ResultWithError[Seq[InsertedExpense]] = {
     DB.withConnection { implicit conn =>
       AnormHelper.runSql {
@@ -110,6 +115,11 @@ object DBExpenseList {
     }
   }
 
+  /**
+   * Finds all expense categories created for the provided expense list ID.
+   * @param id Expense list ID
+   * @return
+   */
   def findAssociatedExpenseCategories(id: Long): ResultWithError[Seq[InsertedExpenseCategory]] = {
     DB.withConnection { implicit conn =>
       AnormHelper.runSql {
@@ -124,6 +134,11 @@ object DBExpenseList {
     }
   }
 
+  /**
+   * Finds all members of expense list with the provided ID.
+   * @param id Expense list ID
+   * @return
+   */
   def findAssociatedUsers(id: Long): ResultWithError[Seq[InsertedUserExpenseListJoinWithUser]] = {
     DB.withConnection { implicit conn =>
       AnormHelper.runSql {
