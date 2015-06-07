@@ -17,6 +17,7 @@ ui.NewExpenseWidgetLocationScreen = ui.NewExpenseWidgetScreen.extend(
           }));
 
       this.$firstInput.typeahead({
+        autoselect: true,
         hint: true,
         highlight: true,
         minLength: 1
@@ -27,3 +28,7 @@ ui.NewExpenseWidgetLocationScreen = ui.NewExpenseWidgetScreen.extend(
         }
       });
     });
+
+ui.NewExpenseWidgetLocationScreen.prototype.onFinish = function () {
+  this.$firstInput.typeahead("close");
+};

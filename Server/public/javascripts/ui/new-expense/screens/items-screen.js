@@ -46,7 +46,8 @@ ui.NewExpenseWidgetItemsScreen = ui.NewExpenseWidgetScreen.extend(
           var value = self.$itemInput.typeahead("val");
           // Remove the last character if it is equal to the key pressed, this is to differentiate
           // between enter presses vs comma presses.
-          if (value.charCodeAt(value.length - 1) === event.keyCode)
+          // TODO(tlei): make this less hacky
+          if (event.keyCode === 188)
             value = value.substr(0, value.length - 1);
           self.addNewItem(value.trim());
         } else if (self.areKeysPressed(self.deleteKeys, event)) {
@@ -59,6 +60,7 @@ ui.NewExpenseWidgetItemsScreen = ui.NewExpenseWidgetScreen.extend(
       });
 
       this.$itemInput.typeahead({
+        autoselect: true,
         hint: true,
         highlight: true,
         minLength: 1
@@ -75,9 +77,14 @@ ui.NewExpenseWidgetItemsScreen.prototype.addNewItem = function (value) {
     var $newElem = $("<li></li>").text(value).attr("data-id", "item");
     this.$itemList.prepend($newElem);
     this.$itemInput.typeahead("val", "");
+    this.$itemInput.typeahead("close");
   }
 };
 
 ui.NewExpenseWidgetItemsScreen.prototype.onSubmit = function () {
   this.addNewItem(this.$itemInput.typeahead("val"));
+};
+
+ui.NewExpenseWidgetItemsScreen.prototype.onFinish = function () {
+  this.$itemInput.typeahead("close");
 };
