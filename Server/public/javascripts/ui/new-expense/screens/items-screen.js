@@ -20,7 +20,7 @@ ui.NewExpenseWidgetItemsScreen = ui.NewExpenseWidgetScreen.extend(
             },
             valueClear: function (screen) {
               screen.$itemList.children().detach();
-              screen.$itemInput.val("");
+              screen.$itemInput.typeahead("val", "");
             },
             valueSerializer: function (screen, json) {
               json.description = utils.join(screen.value(), ',');
@@ -43,7 +43,7 @@ ui.NewExpenseWidgetItemsScreen = ui.NewExpenseWidgetScreen.extend(
         if (self.areKeysPressed(self.delimiterKeys, event)) {
           // Add a new item when the delimiter is pressed
           event.preventDefault();
-          var value = self.$itemInput.val();
+          var value = self.$itemInput.typeahead("val");
           // Remove the last character if it is equal to the key pressed, this is to differentiate
           // between enter presses vs comma presses.
           if (value.charCodeAt(value.length - 1) === event.keyCode)
@@ -51,7 +51,7 @@ ui.NewExpenseWidgetItemsScreen = ui.NewExpenseWidgetScreen.extend(
           self.addNewItem(value.trim());
         } else if (self.areKeysPressed(self.deleteKeys, event)) {
           // If the input field is empty, then delete the last item inserted
-          if (!self.$itemInput.val()) {
+          if (!self.$itemInput.typeahead("val")) {
             event.preventDefault();
             self.$itemList.children().eq(0).detach();
           }
@@ -74,10 +74,10 @@ ui.NewExpenseWidgetItemsScreen.prototype.addNewItem = function (value) {
   if (value) {
     var $newElem = $("<li></li>").text(value).attr("data-id", "item");
     this.$itemList.prepend($newElem);
-    this.$itemInput.val("");
+    this.$itemInput.typeahead("val", "");
   }
 };
 
 ui.NewExpenseWidgetItemsScreen.prototype.onSubmit = function () {
-  this.addNewItem(this.$itemInput.val());
+  this.addNewItem(this.$itemInput.typeahead("val"));
 };
